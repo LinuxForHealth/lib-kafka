@@ -1,0 +1,151 @@
+buildscript {
+    repositories {
+        maven {
+            url 'http://repo1.maven.org/maven2'
+            url "https://plugins.gradle.org/m2/"
+        }
+        jcenter()
+    }
+    dependencies {
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.1"
+        classpath 'ru.vyarus:gradle-use-python-plugin:1.2.0'
+    }
+}
+
+apply plugin: 'ru.vyarus.use-python'
+apply plugin: 'org.sonarqube'
+
+group = 'com.ibm.watson.health.imaging'
+version = "3.0.0"
+description = """CAF lib kafka"""
+
+sonarqube {
+    properties {
+        property "sonar.sources", pySrcDir
+        property "sonar.python.coverage.reportPath", pyXmlCoveragePath
+    }
+}
+
+// --------
+//Whi CAF Python Build Section
+python {
+    //Python dependencies start
+    pip 'attrs:18.1.0'
+    pip 'chardet:3.0.4'
+    pip 'entrypoints:0.3'
+    pip 'idna:2.6'
+    pip 'mccabe:0.6.1'
+    pip 'multidict:4.5.2'
+    pip 'pycodestyle:2.5.0'
+    pip 'pyflakes:2.1.1'
+    pip 'six:1.12.0'
+    pip 'yarl:1.3.0'
+    pip 'async-timeout:3.0.1'
+    pip 'confluent-kafka:1.0.1'
+    //Python dependencies end
+
+    envPath = 'build/venv'
+}
+
+
+task whiCafPySetupBuild(type: PythonTask) {
+    module = 'pip'
+    extraArgs = ['install', 'pytest==4.6.3', 'pytest-cov==2.7.1', 'twine==1.14.0', 'flake8==3.7.8']
+}
+
+task whiCafPyGenerateReqs {
+    doLast {
+        def newFile = new File("${project.projectDir}/pinned.txt")
+        newFile.delete()
+        newFile.createNewFile()
+        python.modules.each { module ->
+            newFile.append(module.replace(":", "==") + "\n")
+        }
+    }
+}
+
+task whiCafPySetupBuildProperties {
+    doLast {
+        def newFile = new File("${project.projectDir}/setup.properties")
+        newFile.delete()
+        newFile.createNewFile()
+        newFile.append("[default]")
+        newFile.append("\nproject_name=${project.name}")
+        newFile.append("\nproject_version=${project.version}")
+        newFile.append("\nproject_srcDir=${pySrcDir}")
+    }
+}
+
+task whiCafPyBuildWheel(type: PythonTask) {
+    command = 'setup.py'
+    extraArgs = ['bdist_wheel', '-d', pyDistDir, '-k']
+}
+
+task whiCafPyTestPrep(type: PythonTask) {
+    command = 'setup.py'
+    extraArgs = ['develop']
+}
+
+task whiCafPyTest(type: PythonTask) {
+    module = 'pytest' 
+    extraArgs = ['--junitxml='+pyTestReportPath, '-v']
+}
+
+task whiCafPyCoverage(type: PythonTask) {
+    module = 'pytest' 
+    extraArgs = [pyTestDir, '--cov', pySrcDir, '--cov-report=xml:'+pyXmlCoveragePath, '--cov-report=html:'+pyHtmlCoveragePath, '--cov-report=term']
+}
+
+task whiCafClean {
+    doLast {
+        exec {
+            commandLine 'rm', '-rf', 'build'
+        }
+    }
+}
+
+task whiCafPyPublishArtifacts(type: PythonTask) {
+    doFirst {
+        def taasArtifactoryUsername = "${taasArtifactoryUsername}"
+        def taasArtifactoryPassword = "${taasArtifactoryPassword}"
+        module = 'twine'
+        extraArgs = ['upload', '--repository-url', whiPypiRepositoryUrl, '-u', taasArtifactoryUsername, '-p', taasArtifactoryPassword, pyDistDir+'/*.whl'] 
+    }
+}
+
+task whiCafPyFlake8(type: PythonTask) {
+    module = 'flake8'
+    extraArgs = [pySrcDir]
+}
+
+task build {}
+task test {}
+task coverage {}
+task uploadArchives {}
+task flake8 {}
+task clean {}
+
+project.tasks.whiCafPyTest.dependsOn project.tasks.whiCafPySetupBuild
+project.tasks.whiCafPyTest.dependsOn project.tasks.whiCafPyTestPrep
+project.tasks.whiCafPyTestPrep.dependsOn project.tasks.whiCafPySetupBuildProperties
+project.tasks.whiCafPyCoverage.dependsOn project.tasks.whiCafPySetupBuild
+project.tasks.whiCafPyCoverage.dependsOn project.tasks.whiCafPyTestPrep
+project.tasks.whiCafPyPublishArtifacts.dependsOn project.tasks.whiCafPySetupBuild
+project.tasks.whiCafPyFlake8.dependsOn project.tasks.whiCafPySetupBuild
+
+project.tasks.build.dependsOn project.tasks.whiCafPySetupBuild
+project.tasks.build.dependsOn project.tasks.whiCafPySetupBuildProperties
+project.tasks.build.dependsOn project.tasks.whiCafPyGenerateReqs
+project.tasks.build.dependsOn project.tasks.whiCafPyTest
+project.tasks.build.finalizedBy project.tasks.whiCafPyBuildWheel
+
+project.tasks.test.finalizedBy project.tasks.whiCafPyTest
+project.tasks.coverage.finalizedBy project.tasks.whiCafPyCoverage
+project.tasks.clean.finalizedBy project.tasks.whiCafClean
+project.tasks.uploadArchives.finalizedBy project.tasks.whiCafPyPublishArtifacts
+project.tasks.flake8.finalizedBy project.tasks.whiCafPyFlake8
+
+// -----------
+
+
+

@@ -1,2 +1,8 @@
-# whi-caf-lib-kafka
-Python kafka lib for topic creation and update
+## whi-caf-lib-kafka
+
+Libraries to create and update kafka topics
+
+## API Methods supported
+
+### TBD
+
