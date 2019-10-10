@@ -14,13 +14,9 @@
 from confluent_kafka.admin import AdminClient, NewTopic, NewPartitions
 import sys
 from whi_caf_lib_kafka.logger import logger
+from whi_caf_lib_kafka.config import topic_config, broker_config
 
-conf = dict(line.strip().split('=') for line in open('/var/app/config/caf-kafka.cfg') if
-            not line.startswith('#') and not line.startswith('\n'))
-client = AdminClient(conf)
-
-topic_config = dict(line.strip().split('=') for line in open('/var/app/config/caf-kafka-topics.cfg') if
-                    not (line.startswith('#') or line.startswith('\n')))
+client = AdminClient(broker_config)
 
 topics = topic_config["topics"].split(",")
 partitions = topic_config["partitions"].split(",")
