@@ -19,7 +19,7 @@ from whi_caf_lib_kafka.logger import logger
 
 broker_config = None
 topic_config = None
-broker_header = 'kafka Broker'
+broker_header = 'kafka broker'
 topic_header = 'kafka topic'
 keys = ('nifi_host_api', 'registry_host_api')
 default_broker_config = {'bootstrap.servers': 'localhost:9092'}

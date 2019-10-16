@@ -105,6 +105,11 @@ pipeline {
                 
             }
         }
+        stage('Copyright Check') {
+    		steps {
+    			copyCheck failOnError: false
+    		}
+		}        
     }
 
     post {
