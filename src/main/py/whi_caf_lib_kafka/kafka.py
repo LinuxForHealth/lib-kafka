@@ -13,11 +13,13 @@
 # ******************************************************************************/
 from time import sleep
 from confluent_kafka.admin import AdminClient, NewTopic, NewPartitions
-from whi_caf_lib_kafka.logger import logger
+from whi_caf_lib_kafka import logging_codes
 from whi_caf_lib_kafka.config import topic_config, broker_config
+import caf_logger.logger as caflogger
+
+logger = caflogger.get_logger('whi-caf-lib-kafka')
 
 client = AdminClient(broker_config)
-
 topics = topic_config["topics"].split(",")
 partitions = topic_config["partitions"].split(",")
 replication_factors = topic_config["replication_factors"].split(",")
@@ -35,16 +37,15 @@ def create_topic():
     for topic, f in fs.items():
         try:
             f.result()  # The result itself is None
-            logger.info("Topic {} created".format(topic))
+            logger.info(logging_codes.WHI_CAF_KAFKA_LIB_CREATE_TOPIC_SUCCESS, topic)
         except Exception as e:
-            logger.error("Failed to create topic {}: {}".format(topic, e))
+            logger.error(logging_codes.WHI_CAF_KAFKA_LIB_CREATE_TOPIC_FAIL, topic, e, exc_info=e)
 
 
 def delete_topic(topic_name):
     """ delete topic """
     global topics
     topics = topic_name.split(",")
-    logger.info('Topic to be deleted is {}'.format(topics))
     # Returns a dict of <topic,future>.
     fs = client.delete_topics(topics, operation_timeout=30)
 
@@ -52,12 +53,12 @@ def delete_topic(topic_name):
     for topic, f in fs.items():
         try:
             f.result()  # The result itself is None
-            logger.info("Topic {} deleted".format(topic))
+            logger.info(logging_codes.WHI_CAF_KAFKA_LIB_DELETE_TOPIC_SUCCESS, topic)
         except Exception as e:
-            logger.error("Failed to delete topic {}: {}".format(topic, e))
+            logger.error(logging_codes.WHI_CAF_KAFKA_LIB_DELETE_TOPIC_FAIL, topic, e, exc_info=e)
 
 
-def update_partition(topic_name, partition_size, recreate_topic):
+def update_partition(topic_name, partition_size, recreate_topic=False):
     """ Update partitions for a topic """
     global topics
     global partitions
@@ -73,7 +74,6 @@ def update_partition(topic_name, partition_size, recreate_topic):
             break
     # If topic exists, check current partition size
     if topic_present:
-        logger.info('Topic name: {} found.'.format(topic_name))
         current_partition_size = len(partition_list)
         if int(partition_size) > current_partition_size:
             new_partition = [NewPartitions(topic_name, int(partition_size))]
@@ -82,26 +82,23 @@ def update_partition(topic_name, partition_size, recreate_topic):
             for topic, f in fs.items():
                 try:
                     f.result()  # The result itself is None
-                    logger.info('Additional partitions created for topic {}'.format(topic))
+                    logger.info(logging_codes.WHI_CAF_KAFKA_LIB_ADD_PARTITION_SUCCESS, topic)
                 except Exception as e:
-                    logger.error('Failed to add partitions to topic {}: {}'.format(topic, e))
+                    logger.error(logging_codes.WHI_CAF_KAFKA_LIB_ADD_PARTITION_FAIL, topic, e)
         elif int(partition_size) == current_partition_size:
-            logger.info('Current partition size: {} is already equal to requested partition size: {}'.format(current_partition_size, partition_size))
+            logger.info(logging_codes.WHI_CAF_KAFKA_LIB_PARTITION_NUM_EQUAL, current_partition_size, partition_size)
         else:
             # If recreate_topic is set to True delete the topic and create it with new partition
-            logger.info('Requested partition size: {} less than current size: {} '.format(partition_size, current_partition_size))
+            logger.info(logging_codes.WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS, partition_size, current_partition_size)
             if recreate_topic:
+                logger.info(logging_codes.WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS_AND_RECREATE, topic_name)
                 topics = [topic_name]
                 delete_topic(topic_name)
-                sleep(5)
+                sleep(2)
                 partitions = [str(partition_size)]
-                logger.info('Requested partitions: {}'.format(partitions))
                 replication_factors = [str(len(replica_list))]
                 create_topic()
             else:
-                logger.info(
-                    'Partition cannot be reduced for a topic. For recreating a topic with new partition call this '
-                    'function with recreate_topic value as True')
+                logger.info(logging_codes.WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS_AND_NOT_RECREATE)
     else:
-        logger.warning('Topic name: {} NOT found!'.format(topic_name))
-
+        logger.info(logging_codes.WHI_CAF_LIB_TOPIC_NOT_FOUND, topic_name)

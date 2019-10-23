@@ -14,14 +14,17 @@
 
 import configparser
 import os
+import caf_logger.logger as caflogger
+from whi_caf_lib_kafka import logging_codes
 
-from whi_caf_lib_kafka.logger import logger
+logger = caflogger.get_logger('whi-caf-lib-kafka')
 
 broker_config = None
 topic_config = None
 broker_header = 'kafka broker'
 topic_header = 'kafka topic'
-keys = ('nifi_host_api', 'registry_host_api')
+broker_keys = ('bootstrap.servers',)
+topic_keys = ('topics', 'partitions', 'replication_factors')
 default_broker_config = {'bootstrap.servers': 'localhost:9092'}
 default_topic_config = {'topics': 'testTopic', 'partitions': '1', 'replication_factors': '1'}
 
@@ -32,43 +35,50 @@ class InvalidConfigException(Exception):
 
 def load_broker_config(config_file):
     global broker_config
-    if not broker_config:
-        broker_config = {}
-        logger.info("loading config file %s", config_file)
-        configfile = configparser.ConfigParser()
-        configfile.optionxform = str
-        configfile.read(config_file)
-        if broker_header not in configfile.sections():
-            logger.error("Invalid config. Kafka Broker header not found. Exiting...")
-            raise InvalidConfigException("Nifi header not found.")
-        temp_config = configfile[broker_header]
-        if not validate_config(temp_config):
-            raise InvalidConfigException("Missing keys")
-        broker_config = {**default_broker_config, **temp_config}
+    broker_config = {}
+    logger.info(logging_codes.WHI_CAF_KAFKA_LIB_LOAD_CONFIG, config_file)
+    configfile = configparser.ConfigParser()
+    configfile.optionxform = str
+    configfile.read(config_file)
+    if broker_header not in configfile.sections():
+        logger.error(logging_codes.WHI_CAF_KAFKA_LIB_INVALID_CONFIG_HEADER, 'broker', 'kafka broker')
+        raise InvalidConfigException('kafka broker header not found.')
+    temp_config = configfile[broker_header]
+    if not validate_broker_config(temp_config):
+        raise InvalidConfigException('Missing keys')
+    broker_config = {**default_broker_config, **temp_config}
 
 
 def load_topic_config(config_file):
     global topic_config
-    if not topic_config:
-        topic_config = {}
-        logger.info("loading config file %s", config_file)
-        configfile = configparser.ConfigParser()
-        configfile.optionxform = str
-        configfile.read(config_file)
-        if topic_header not in configfile.sections():
-            logger.error("Invalid config. Kafka Broker header not found. Exiting...")
-            raise InvalidConfigException("Nifi header not found.")
-        temp_config = configfile[topic_header]
-        if not validate_config(temp_config):
-            raise InvalidConfigException("Missing keys")
-        topic_config = {**default_topic_config, **temp_config}
+    topic_config = {}
+    logger.info(logging_codes.WHI_CAF_KAFKA_LIB_LOAD_CONFIG, config_file)
+    configfile = configparser.ConfigParser()
+    configfile.optionxform = str
+    configfile.read(config_file)
+    if topic_header not in configfile.sections():
+        logger.error(logging_codes.WHI_CAF_KAFKA_LIB_INVALID_CONFIG_HEADER, 'topic', 'kafka topic')
+        raise InvalidConfigException('kafka topic header not found.')
+    temp_config = configfile[topic_header]
+    if not validate_topic_config(temp_config):
+        raise InvalidConfigException('Missing keys')
+    topic_config = {**default_topic_config, **temp_config}
 
 
-def validate_config(config):
+def validate_broker_config(config):
     valid = True
-    for key in keys:
+    for key in broker_keys:
         if key not in config:
-            logger.error("Invalid config. Missing %s parameter", key)
+            logger.error(logging_codes.WHI_CAF_KAFKA_LIB_INVALID_CONFIG_PARAMETER, 'broker', key)
+            valid = False
+    return valid
+
+
+def validate_topic_config(config):
+    valid = True
+    for key in topic_keys:
+        if key not in config:
+            logger.error(logging_codes.WHI_CAF_KAFKA_LIB_INVALID_CONFIG_PARAMETER, 'topic', key)
             valid = False
     return valid
 
@@ -76,15 +86,14 @@ def validate_config(config):
 broker_config_path = os.getenv('CAF_KAFKA_BROKER_CONFIG_FILE')
 topic_config_path = os.getenv('CAF_KAFKA_TOPIC_CONFIG_FILE')
 if broker_config_path or topic_config_path is None:
-    logger.warning(
-        "CAF_KAFKA_BROKER_CONFIG_FILE and CAF_KAFKA_TOPIC_CONFIG_FILE environment variable not defined. Loading "
-        "default config...")
+    logger.warn(logging_codes.WHI_CAF_KAFKA_LIB_MISSING_CONFIG_ENV, 'CAF_KAFKA_BROKER_CONFIG_FILE',
+                   'CAF_KAFKA_TOPIC_CONFIG_FILE')
     broker_config = default_broker_config
     topic_config = default_topic_config
 
 elif not (os.path.exists(broker_config_path) and os.path.isfile(broker_config_path) and os.path.exists(
         topic_config_path)) or not os.path.isfile(topic_config_path):
-    logger.warning('Config file not found. Loading default config...')
+    logger.warn(logging_codes.WHI_CAF_KAFKA_LIB_MISSING_CONFIG_FILE)
     broker_config = default_broker_config
     topic_config = default_topic_config
 else:
