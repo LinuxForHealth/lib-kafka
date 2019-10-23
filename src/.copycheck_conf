@@ -1,0 +1,18 @@
+product_id: 00-00000-00
+us_dist_only: false
+filetypes_to_ignore:
+  CODEOWNERS
+  .copycheck_conf
+  .gitattributes
+  .gitignore
+  .wicked
+  gradlew
+  gradlew.bat
+  MANIFEST.in
+  pinned.txt
+  README.md
+dirs_to_ignore:
+  devops
+  gradle
+  liberty
+  build
