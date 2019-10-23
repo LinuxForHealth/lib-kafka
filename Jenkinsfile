@@ -1,5 +1,5 @@
 String DOCKER_REGISTRY = "wh-imaging-dev-docker-local.artifactory.swg-devops.com"
-String BUILD_UTIL_IMAGE = "whi-image-python36-build-util:latest"
+String BUILD_UTIL_IMAGE = "whi-image-python37-build-util:latest"
 String VERSION = "3.0.0"
 String SLACK_CHANNEL = "#whi-caf-builds"
 boolean NOTIFY_PR_IN_SLACK = true
@@ -32,6 +32,7 @@ pipeline {
                         buildUtilImage = docker.image("${DOCKER_REGISTRY}/${BUILD_UTIL_IMAGE}")
                         buildUtilImage.pull()
                         buildUtilImage.inside {
+                            sh "export PIP_INDEX_URL=https://${USERNAME}:${PASSWORD}@na.artifactory.swg-devops.com/artifactory/api/pypi/wh-imaging-pypi-local/simple"
                             sh "./gradlew clean build coverage"
                         }
                     }
