@@ -1,3 +1,17 @@
+/*******************************************************************************
+ * IBM Watson Imaging Common Application Framework 3.0                         *
+ *                                                                             *
+ * IBM Confidential                                                            *
+ *                                                                             *
+ * OCO Source Materials                                                        *
+ *                                                                             *
+ * (C) Copyright IBM Corp. 2019                                                *
+ *                                                                             *
+ * The source code for this program is not published or otherwise              *
+ * divested of its trade secrets, irrespective of what has been                *
+ * deposited with the U.S. Copyright Office.                                   *
+ *******************************************************************************/
+ 
 String DOCKER_REGISTRY = "wh-imaging-dev-docker-local.artifactory.swg-devops.com"
 String BUILD_UTIL_IMAGE = "whi-image-python37-build-util:latest"
 String VERSION = "3.0.0"
