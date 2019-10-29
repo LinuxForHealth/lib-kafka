@@ -51,7 +51,7 @@ CAF_KAFKA_TOPIC_OPERATION: Valid values are CREATE, UPDATE and DELETE. Default v
 ### create_topics()
     This function is used to create topics as per configuration in the kafka topic config file defined by env var CAF_KAFKA_TOPIC_CONFIG_FILE
 
-### delete_topics(topic_name)
+### delete_topics()
 
     This function is used to delete topics as per configuration in the kafka topic config file defined by env var CAF_KAFKA_TOPIC_CONFIG_FILE
 

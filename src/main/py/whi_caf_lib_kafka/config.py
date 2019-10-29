@@ -20,7 +20,6 @@ from whi_caf_lib_kafka import logging_codes
 logger = caflogger.get_logger('whi-caf-lib-kafka')
 
 broker_config = None
-# topic_config = None
 create_topic_list = []
 delete_topic_list = []
 update_topic_list = []
@@ -71,30 +70,21 @@ def load_topic_config(config_file, topic_config_operation):
     if not validate_topic_operation_config(configfile[topic_header]):
         raise InvalidConfigException('Missing keys. Expected keys are create_topics, update_topics and '
                                      'delete_topics')
-    if topic_config_operation == 'CREATE':
-        if 'create_topics' in configfile[topic_header]:
-            for topic in configfile[topic_header]["create_topics"].split(","):
-                if validate_topic_config(configfile[topic]):
-                    create_topic_list.append(configfile[topic])
-                else:
-                    raise InvalidConfigException('Missing keys. Expected keys are name, partitions and '
-                                                 'replication_factor')
-    if topic_config_operation == 'UPDATE':
-        if 'update_topics' in configfile[topic_header]:
-            for topic in configfile[topic_header]["update_topics"].split(","):
-                if validate_topic_config(configfile[topic]):
-                    update_topic_list.append(configfile[topic])
-                else:
-                    raise InvalidConfigException('Missing keys. Expected keys are name, partitions and '
-                                                 'replication_factor')
-    if topic_config_operation == 'DELETE':
-        if 'delete_topics' in configfile[topic_header]:
-            for topic in configfile[topic_header]["delete_topics"].split(","):
-                if validate_topic_config(configfile[topic]):
-                    delete_topic_list.append(configfile[topic])
-                else:
-                    raise InvalidConfigException('Missing keys. Expected keys are name, partitions and '
-                                                 'replication_factor')
+    if (topic_config_operation == 'CREATE') and ('create_topics' in configfile[topic_header]):
+        _load_topic_list(configfile, create_topic_list)
+    if (topic_config_operation == 'UPDATE') and ('update_topics' in configfile[topic_header]):
+        _load_topic_list(configfile, update_topic_list)
+    if (topic_config_operation == 'DELETE') and ('delete_topics' in configfile[topic_header]):
+        _load_topic_list(configfile, delete_topic_list)
+
+
+def _load_topic_list(configfile, topic_list):
+    for topic in configfile[topic_header]["create_topics"].split(","):
+        if validate_topic_config(configfile[topic]):
+            topic_list.append(configfile[topic])
+        else:
+            raise InvalidConfigException('Missing keys. Expected keys are name, partitions and '
+                                         'replication_factor')
 
 
 def validate_broker_config(config):
