@@ -12,14 +12,15 @@
  * deposited with the U.S. Copyright Office.                                   *
  *******************************************************************************/
  
-String DOCKER_REGISTRY = "wh-imaging-dev-docker-local.artifactory.swg-devops.com"
-String BUILD_UTIL_IMAGE = "whi-image-python37-build-util:latest"
-String VERSION = "3.0.0"
-String SLACK_CHANNEL = "#whi-caf-builds"
-boolean NOTIFY_PR_IN_SLACK = true
-String MAINLINE_BRANCH = "master"
-String GIT_REPO = 'WH-Imaging/whi-caf-lib-kafka'
-
+String DOCKER_REGISTRY="wh-imaging-dev-docker-local.artifactory.swg-devops.com"
+String BUILD_UTIL_IMAGE="whi-image-python37-build-util:latest"
+String VERSION="3.0.0"
+String SLACK_CHANNEL="#whi-caf-builds"
+boolean NOTIFY_PR_IN_SLACK=true
+String MAINLINE_BRANCH="master"
+String GIT_REPO='WH-Imaging/whi-caf-lib-kafka'
+String PROJECT_NAME="whi-caf-lib-kafka"
+String APPSCAN_APP_ID="e6df4e91-77a9-4d34-a554-e87663f1b299"
 
 pipeline {
     agent {
@@ -33,6 +34,8 @@ pipeline {
     stages {
         stage('Build') {
             steps {
+                slackSend color: "#00cc00", channel: SLACK_CHANNEL, teamDomain: 'ibm-watsonhealth', tokenCredentialId: 'ibm-watsonhealth_slack_token', message: "Build Started: ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
+
                 sh "git clean -dfx"
 
                 script {
@@ -99,11 +102,23 @@ pipeline {
             }
         }
 
+        stage('AppScan') {
+            when {
+                expression {
+                return "${BRANCH_NAME}" == "master" || "${BRANCH_NAME}" =~ /^release-/
+                }
+            }
+            steps {
+                    appscan application: "${APPSCAN_APP_ID}", credentials: 'WHI_ASOC_C3CVMJYH_FUNCTIONAL_CRED', name: "${PROJECT_NAME}-${env.BUILD_ID}", scanner: static_analyzer(hasOptions: true, target: "${env.WORKSPACE}/src/main/py"), type: 'Static Analyzer'
+            }
+        }
+
         stage('Publish') {
             when {
-                branch 'master'
+                expression {
+                return "${BRANCH_NAME}" == "master" || "${BRANCH_NAME}" =~ /^release-/
+                }
             }
-
             steps {
                 echo 'Publishing....'
 
@@ -124,6 +139,11 @@ pipeline {
             }
         }
         stage('Copyright Check') {
+            when {
+                expression {
+                return "${BRANCH_NAME}" == "master" || "${BRANCH_NAME}" =~ /^release-/
+                }
+            }            
     		steps {
     			copyCheck failOnError: false
     		}

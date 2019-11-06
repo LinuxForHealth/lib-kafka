@@ -1,3 +1,17 @@
+ /*******************************************************************************
+ * IBM Watson Imaging Common Application Framework 3.0                         *
+ *                                                                             *
+ * IBM Confidential                                                            *
+ *                                                                             *
+ * OCO Source Materials                                                        *
+ *                                                                             *
+ * (C) Copyright IBM Corp. 2019                                                *
+ *                                                                             *
+ * The source code for this program is not published or otherwise              *
+ * divested of its trade secrets, irrespective of what has been                *
+ * deposited with the U.S. Copyright Office.                                   *
+ *******************************************************************************/
+
 buildscript {
     repositories {
         maven {
@@ -7,7 +21,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.1"
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.8"
         classpath 'ru.vyarus:gradle-use-python-plugin:1.2.0'
     }
 }
@@ -147,6 +161,3 @@ project.tasks.uploadArchives.finalizedBy project.tasks.whiCafPyPublishArtifacts
 project.tasks.flake8.finalizedBy project.tasks.whiCafPyFlake8
 
 // -----------
-
-
-
