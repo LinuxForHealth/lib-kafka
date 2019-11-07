@@ -105,7 +105,7 @@ task whiCafPyTestPrep(type: PythonTask) {
 
 task whiCafPyTest(type: PythonTask) {
     module = 'pytest' 
-    extraArgs = ['--junitxml='+pyTestReportPath, '-v']
+    extraArgs = [pyTestDir, '--junitxml='+pyTestReportPath, '-v']
 }
 
 task whiCafPyCoverage(type: PythonTask) {
