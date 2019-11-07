@@ -36,7 +36,9 @@ description = """CAF lib kafka"""
 sonarqube {
     properties {
         property "sonar.sources", pySrcDir
-        property "sonar.python.coverage.reportPath", pyXmlCoveragePath
+        property "sonar.tests", pyTestDir
+        property "sonar.python.coverage.reportPaths", pyXmlCoveragePath
+        property "sonar.python.xunit.reportPath", pyTestReportPath
     }
 }
 
