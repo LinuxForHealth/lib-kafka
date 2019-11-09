@@ -26,10 +26,6 @@ pipeline {
     agent {
         label 'whis-bld02'
     }
-    
-    environment {
-        DOCKER_BUILDKIT = 1
-    }
 
     stages {
         stage('Build') {
