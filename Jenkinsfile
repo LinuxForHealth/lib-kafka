@@ -48,7 +48,7 @@ pipeline {
                             buildUtilImage = docker.image("${DOCKER_REGISTRY}/${BUILD_UTIL_IMAGE}")
                             buildUtilImage.pull()
                             buildUtilImage.inside {
-                                sh "export PIP_EXTRA_INDEX_URL=https://${USERNAME}:${PASSWORD}@na.artifactory.swg-devops.com/artifactory/api/pypi/wh-imaging-pypi-local/simple; ./gradlew clean build coverage"
+                                sh "export PIP_EXTRA_INDEX_URL=https://${USERNAME}:${PASSWORD}@na.artifactory.swg-devops.com/artifactory/api/pypi/wh-imaging-pypi-virtual/simple; ./gradlew clean build coverage"
                             }
                         }
                     }

@@ -126,11 +126,18 @@ def _add_partition(partition_size, topic_name):
             logger.error(logging_codes.WHI_CAF_KAFKA_LIB_ADD_PARTITION_FAIL, topic, e)
 
 
+def _convert_to_bool(input_str):
+    if input_str is not None and input_str.strip().upper() == 'TRUE':
+        return True
+    else:
+        return False
+
+
 if __name__ == "__main__":
     kafka_operation = os.getenv('CAF_KAFKA_TOPIC_OPERATION')
     if 'CREATE' == kafka_operation:
         create_topics()
     elif 'UPDATE' == kafka_operation:
-        update_topics(os.getenv('RECREATE_TOPIC', default=False))
+        update_topics(_convert_to_bool(os.getenv('RECREATE_TOPIC')))
     elif 'DELETE' == kafka_operation:
         delete_topics()

@@ -121,6 +121,15 @@ class TestKafkaApiMethods(unittest.TestCase):
         kafka.update_topics()
         self.assertEqual(mock_logger_info.call_count, 1)
 
+    def test_convert_to_bool(self):
+        self.assertFalse(kafka._convert_to_bool(None))
+        self.assertFalse(kafka._convert_to_bool(''))
+        self.assertFalse(kafka._convert_to_bool('  '))
+        self.assertFalse(kafka._convert_to_bool('False'))
+        self.assertFalse(kafka._convert_to_bool('None'))
+        self.assertTrue(kafka._convert_to_bool('True'))
+        self.assertTrue(kafka._convert_to_bool('TRUE'))        
+        
 
 if __name__ == '__main__':
     unittest.main()
