@@ -37,8 +37,8 @@ class TestConfigMethods(unittest.TestCase):
         test_config_topic = configparser.ConfigParser()
         test_config_topic.add_section('kafka topic operation')
         test_config_topic.set('kafka topic operation', 'create_topics', 'testTopic1,testTopic2')
-        test_config_topic.set('kafka topic operation', 'update_topics', 'testTopic1,testTopic2')
-        test_config_topic.set('kafka topic operation', 'delete_topics', 'testTopic1,testTopic2')
+        test_config_topic.set('kafka topic operation', 'update_topics', 'testTopic1,testTopic3')
+        test_config_topic.set('kafka topic operation', 'delete_topics', 'testTopic2,testTopic3')
         test_config_topic.add_section('testTopic1')
         test_config_topic.set('testTopic1', 'name', 'testTopic1')
         test_config_topic.set('testTopic1', 'partitions', '1')
@@ -47,6 +47,10 @@ class TestConfigMethods(unittest.TestCase):
         test_config_topic.set('testTopic2', 'name', 'testTopic2')
         test_config_topic.set('testTopic2', 'partitions', '1')
         test_config_topic.set('testTopic2', 'replication_factor', '1')
+        test_config_topic.add_section('testTopic3')
+        test_config_topic.set('testTopic3', 'name', 'testTopic3')
+        test_config_topic.set('testTopic3', 'partitions', '1')
+        test_config_topic.set('testTopic3', 'replication_factor', '1')
         with open(test_topic_config_file_name, 'w') as topic_config_file:
             test_config_topic.write(topic_config_file)
 
@@ -62,6 +66,8 @@ class TestConfigMethods(unittest.TestCase):
         config.delete_topic_list = []
         config.load_topic_config(test_topic_config_file_name, 'CREATE')
         self.assertEqual(len(config.create_topic_list), 2)
+        self.assertEqual(config.create_topic_list[0]['name'], 'testTopic1')
+        self.assertEqual(config.create_topic_list[1]['name'], 'testTopic2')
         self.assertEqual(len(config.update_topic_list), 0)
         self.assertEqual(len(config.delete_topic_list), 0)
 
@@ -72,6 +78,8 @@ class TestConfigMethods(unittest.TestCase):
         config.load_topic_config(test_topic_config_file_name, 'UPDATE')
         self.assertEqual(len(config.create_topic_list), 0)
         self.assertEqual(len(config.update_topic_list), 2)
+        self.assertEqual(config.update_topic_list[0]['name'], 'testTopic1')
+        self.assertEqual(config.update_topic_list[1]['name'], 'testTopic3')
         self.assertEqual(len(config.delete_topic_list), 0)
 
         # load delete topic list
@@ -82,6 +90,8 @@ class TestConfigMethods(unittest.TestCase):
         self.assertEqual(len(config.create_topic_list), 0)
         self.assertEqual(len(config.update_topic_list), 0)
         self.assertEqual(len(config.delete_topic_list), 2)
+        self.assertEqual(config.delete_topic_list[0]['name'], 'testTopic2')
+        self.assertEqual(config.delete_topic_list[1]['name'], 'testTopic3')
 
     def tearDown(self) -> None:
         os.remove(test_broker_config_file_name)

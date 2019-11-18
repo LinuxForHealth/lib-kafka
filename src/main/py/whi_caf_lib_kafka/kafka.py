@@ -62,9 +62,7 @@ def delete_topics():
 
 def update_topics(recreate_topic=False):
     """ Update partitions for a topic """
-    global new_topics_list
-    global deleted_topics_list
-    topic_present = False
+    global new_topics_list, deleted_topics_list
     partition_list = None
     l_topic = client.list_topics(timeout=15)
     for updated_topic in update_topic_list:
@@ -79,34 +77,53 @@ def update_topics(recreate_topic=False):
                 break
         # If topic exists, check current partition size
         if topic_present:
-            current_partition_size = len(partition_list)
-            if int(partition_size) > current_partition_size:
-                new_partition = [NewPartitions(topic_name, int(partition_size))]
-                fs = client.create_partitions(new_partition, validate_only=False)
-                # Wait for operation to finish.
-                for topic, f in fs.items():
-                    try:
-                        f.result()  # The result itself is None
-                        logger.info(logging_codes.WHI_CAF_KAFKA_LIB_ADD_PARTITION_SUCCESS, topic)
-                    except Exception as e:
-                        logger.error(logging_codes.WHI_CAF_KAFKA_LIB_ADD_PARTITION_FAIL, topic, e)
-            elif int(partition_size) == current_partition_size:
-                logger.info(logging_codes.WHI_CAF_KAFKA_LIB_PARTITION_NUM_EQUAL, current_partition_size, partition_size)
-            else:
-                # If recreate_topic is set to True delete the topic and create it with new partition
-                logger.info(logging_codes.WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS, partition_size, current_partition_size)
-                if recreate_topic:
-                    logger.info(logging_codes.WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS_AND_RECREATE, topic_name)
-                    deleted_topics_list = [{'name': topic_name}]
-                    delete_topics()
-                    sleep(2)
-                    new_topics_list = [{'name': topic_name, 'partitions': str(partition_size),
-                                        'replication_factor': str(len(replica_list))}]
-                    create_topics()
-                else:
-                    logger.info(logging_codes.WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS_AND_NOT_RECREATE)
+            _update_topic(partition_list, partition_size, recreate_topic, replica_list, topic_name)
         else:
             logger.info(logging_codes.WHI_CAF_LIB_TOPIC_NOT_FOUND, topic_name)
+
+
+def _update_topic(partition_list, partition_size, recreate_topic, replica_list, topic_name):
+    current_partition_size = len(partition_list)
+    if int(partition_size) > current_partition_size:
+        _add_partition(partition_size, topic_name)
+    elif int(partition_size) == current_partition_size:
+        logger.info(logging_codes.WHI_CAF_KAFKA_LIB_PARTITION_NUM_EQUAL,
+                    current_partition_size,
+                    partition_size,
+                    topic_name)
+    else:
+        # If recreate_topic is set to True delete the topic and create it with new partition
+        logger.info(logging_codes.WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS,
+                    partition_size,
+                    current_partition_size,
+                    topic_name)
+        if recreate_topic:
+            _recreate_topic(partition_size, replica_list, topic_name)
+        else:
+            logger.info(logging_codes.WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS_AND_NOT_RECREATE)
+
+
+def _recreate_topic(partition_size, replica_list, topic_name):
+    global deleted_topics_list, new_topics_list
+    logger.info(logging_codes.WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS_AND_RECREATE, topic_name)
+    deleted_topics_list = [{'name': topic_name}]
+    delete_topics()
+    sleep(5)  # Necessary delay for the operation to complete on cluster
+    new_topics_list = [{'name': topic_name, 'partitions': str(partition_size),
+                        'replication_factor': str(len(replica_list))}]
+    create_topics()
+
+
+def _add_partition(partition_size, topic_name):
+    new_partition = [NewPartitions(topic_name, int(partition_size))]
+    fs = client.create_partitions(new_partition, validate_only=False)
+    # Wait for operation to finish.
+    for topic, f in fs.items():
+        try:
+            f.result()  # The result itself is None
+            logger.info(logging_codes.WHI_CAF_KAFKA_LIB_ADD_PARTITION_SUCCESS, topic)
+        except Exception as e:
+            logger.error(logging_codes.WHI_CAF_KAFKA_LIB_ADD_PARTITION_FAIL, topic, e)
 
 
 if __name__ == "__main__":

@@ -3,14 +3,14 @@
 .gradle
 activate
 build
-pinned.txt
 __pycache__
 *.egg-info
 htmlcov
 pytest-report.xml
 coverage.xml
 .coverage
-setup.properties
 .vscode
 .idea
 .pytest_cache
+.settings
+.project

@@ -31,8 +31,9 @@ WHI_CAF_KAFKA_LIB_DELETE_TOPIC_FAIL = ('CAFKAFKALIBERR004', 'Failed to delete to
 WHI_CAF_KAFKA_LIB_ADD_PARTITION_SUCCESS = ('CAFKAFKALIBLOG004', 'Additional partitions created for topic {}')
 WHI_CAF_KAFKA_LIB_ADD_PARTITION_FAIL = ('CAFKAFKALIBERR005', 'Failed to add partitions to topic {}: {}')
 WHI_CAF_KAFKA_LIB_PARTITION_NUM_EQUAL = ('CAFKAFKALIBLOG005', 'Current partition size: {} is already equal to '
-                                                              'requested partition size: {}')
-WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS = ('CAFKAFKALIBLOG006', 'Requested partition size: {} less than current size: {}')
+                                                              'requested partition size: {} for topic {}')
+WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS = ('CAFKAFKALIBLOG006', 'Requested partition size: {} less than current size: {} '
+                                                             'for topic {}')
 
 WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS_AND_NOT_RECREATE = ('CAFKAFKALIBLOG007', 'Partition cannot be reduced for a '
                                                                               'topic. For recreating a topic with new'

@@ -71,15 +71,15 @@ def load_topic_config(config_file, topic_config_operation):
         raise InvalidConfigException('Missing keys. Expected keys are create_topics, update_topics and '
                                      'delete_topics')
     if (topic_config_operation == 'CREATE') and ('create_topics' in configfile[topic_header]):
-        _load_topic_list(configfile, create_topic_list)
+        _load_topic_list(configfile, create_topic_list, 'create_topics')
     if (topic_config_operation == 'UPDATE') and ('update_topics' in configfile[topic_header]):
-        _load_topic_list(configfile, update_topic_list)
+        _load_topic_list(configfile, update_topic_list, 'update_topics')
     if (topic_config_operation == 'DELETE') and ('delete_topics' in configfile[topic_header]):
-        _load_topic_list(configfile, delete_topic_list)
+        _load_topic_list(configfile, delete_topic_list, 'delete_topics')
 
 
-def _load_topic_list(configfile, topic_list):
-    for topic in configfile[topic_header]["create_topics"].split(","):
+def _load_topic_list(configfile, topic_list, operation_header):
+    for topic in configfile[topic_header][operation_header].split(","):
         if validate_topic_config(configfile[topic]):
             topic_list.append(configfile[topic])
         else:
