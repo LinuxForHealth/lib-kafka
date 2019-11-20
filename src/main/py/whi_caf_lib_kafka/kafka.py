@@ -11,8 +11,10 @@
 # divested of its trade secrets, irrespective of what has been                *
 # deposited with the U.S. Copyright Office.                                   *
 # ******************************************************************************/
+import sys
 from time import sleep
-from confluent_kafka.admin import AdminClient, NewTopic, NewPartitions
+from confluent_kafka.admin import AdminClient, NewTopic, NewPartitions, KafkaException
+from confluent_kafka import KafkaError
 from whi_caf_lib_kafka import logging_codes
 from whi_caf_lib_kafka.config import broker_config, create_topic_list, update_topic_list, delete_topic_list
 import caf_logger.logger as caflogger
@@ -27,41 +29,62 @@ deleted_topics_list = delete_topic_list
 
 def create_topics():
     """ Create topics """
-
+    logger.info(logging_codes.WHI_CAF_LIB_TOPIC_START_CREATE)
     new_topics = [NewTopic(topic['name'], num_partitions=int(topic['partitions']),
                            replication_factor=int(topic['replication_factor']))
                   for topic in new_topics_list]
 
-    # Call create_topics to asynchronously create topics, a dict
-    # of <topic,future> is returned.
-    fs = client.create_topics(new_topics)
+    # A dict of<topic,future> is returned.
+    result = client.create_topics(new_topics)
 
-    for topic, f in fs.items():
+    for topic, future in result.items():
         try:
-            f.result()  # The result itself is None
+            future.result()  # The result itself is None
             logger.info(logging_codes.WHI_CAF_KAFKA_LIB_CREATE_TOPIC_SUCCESS, topic)
+        except KafkaException as e:
+            if e.args[0].code() == KafkaError.TOPIC_ALREADY_EXISTS:
+                logger.info(logging_codes.WHI_CAF_LIB_TOPIC_EXISTS, topic)
+            elif e.args[0].code() == KafkaError._TIMED_OUT:
+                logger.error(logging_codes.WHI_CAF_LIB_CONNECTION_TIMEOUT, broker_config["bootstrap.servers"], topic, e)
+                sys.exit(1)
+            else:
+                logger.error(logging_codes.WHI_CAF_KAFKA_LIB_CREATE_TOPIC_FAIL, topic, e, exc_info=e)
+                sys.exit(1)
         except Exception as e:
             logger.error(logging_codes.WHI_CAF_KAFKA_LIB_CREATE_TOPIC_FAIL, topic, e, exc_info=e)
+            sys.exit(1)
 
 
 def delete_topics():
     """ delete topics """
+    logger.info(logging_codes.WHI_CAF_LIB_TOPIC_START_DELETE)
     deleted_topics = [topic['name']
                       for topic in deleted_topics_list]
     # Returns a dict of <topic,future>.
-    fs = client.delete_topics(deleted_topics, operation_timeout=30)
+    result = client.delete_topics(deleted_topics, operation_timeout=30)
 
     # Wait for operation to finish.
-    for topic, f in fs.items():
+    for topic, future in result.items():
         try:
-            f.result()  # The result itself is None
+            future.result()  # The result itself is None
             logger.info(logging_codes.WHI_CAF_KAFKA_LIB_DELETE_TOPIC_SUCCESS, topic)
+        except KafkaException as e:
+            if e.args[0].code() == KafkaError.UNKNOWN_TOPIC_OR_PART:
+                logger.info(logging_codes.WHI_CAF_LIB_TOPIC_NOT_EXISTS, topic)
+            elif e.args[0].code() == KafkaError._TIMED_OUT:
+                logger.error(logging_codes.WHI_CAF_LIB_CONNECTION_TIMEOUT, broker_config["bootstrap.servers"], topic, e)
+                sys.exit(1)
+            else:
+                logger.error(logging_codes.WHI_CAF_KAFKA_LIB_DELETE_TOPIC_FAIL, topic, e, exc_info=e)
+                sys.exit(1)
         except Exception as e:
             logger.error(logging_codes.WHI_CAF_KAFKA_LIB_DELETE_TOPIC_FAIL, topic, e, exc_info=e)
+            sys.exit(1)
 
 
 def update_topics(recreate_topic=False):
     """ Update partitions for a topic """
+    logger.info(logging_codes.WHI_CAF_LIB_TOPIC_START_UPDATE)
     global new_topics_list, deleted_topics_list
     partition_list = None
     l_topic = client.list_topics(timeout=15)
@@ -105,7 +128,7 @@ def _update_topic(partition_list, partition_size, recreate_topic, replica_list, 
 
 def _recreate_topic(partition_size, replica_list, topic_name):
     global deleted_topics_list, new_topics_list
-    logger.info(logging_codes.WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS_AND_RECREATE, topic_name)
+    logger.info(logging_codes.WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS_AND_RECREATE, topic_name, partition_size)
     deleted_topics_list = [{'name': topic_name}]
     delete_topics()
     sleep(5)  # Necessary delay for the operation to complete on cluster
@@ -121,7 +144,7 @@ def _add_partition(partition_size, topic_name):
     for topic, f in fs.items():
         try:
             f.result()  # The result itself is None
-            logger.info(logging_codes.WHI_CAF_KAFKA_LIB_ADD_PARTITION_SUCCESS, topic)
+            logger.info(logging_codes.WHI_CAF_KAFKA_LIB_ADD_PARTITION_SUCCESS, topic, partition_size)
         except Exception as e:
             logger.error(logging_codes.WHI_CAF_KAFKA_LIB_ADD_PARTITION_FAIL, topic, e)
 
@@ -141,3 +164,5 @@ if __name__ == "__main__":
         update_topics(_convert_to_bool(os.getenv('RECREATE_TOPIC')))
     elif 'DELETE' == kafka_operation:
         delete_topics()
+    else:
+        logger.warn(logging_codes.WHI_CAF_KAFKA_LIB_INVALID_OPERATION, kafka_operation)

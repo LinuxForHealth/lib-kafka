@@ -12,33 +12,33 @@
 # deposited with the U.S. Copyright Office.                                   *
 # ******************************************************************************/
 
-from logging import CRITICAL
 from unittest import mock
 from whi_caf_lib_kafka import kafka
 import unittest
 import concurrent.futures
 from confluent_kafka.admin import ClusterMetadata, TopicMetadata, PartitionMetadata
-import os
 
 
 class TestKafkaApiMethods(unittest.TestCase):
 
+    @mock.patch("sys.exit")
     @mock.patch("confluent_kafka.admin.AdminClient.create_topics")
     @mock.patch("caf_logger.logger.CAFLogger.error")
     @mock.patch("caf_logger.logger.CAFLogger.info")
-    def test_create_topics(self, mock_logger_info, mock_logger_error, mock_create_topics):
+    def test_create_topics(self, mock_logger_info, mock_logger_error, mock_create_topics, mock_sys_exit):
         kafka.create_topics()
         self.assertTrue(mock_create_topics.called)
         self.assertFalse(mock_logger_error.called)
         self.assertEqual(mock_create_topics.call_count, 1)
 
+        mock_create_topics.reset_mock()
         f = concurrent.futures.Future()
         f.set_running_or_notify_cancel()
         f.set_result(None)
         mock_create_topics.return_value = {'testTopic1': None, 'testTopic2': f}
         kafka.create_topics()
         self.assertTrue(mock_create_topics.called)
-        self.assertEqual(mock_create_topics.call_count, 2)
+        self.assertEqual(mock_create_topics.call_count, 1)
         self.assertTrue(mock_logger_error.called)
         self.assertTrue(mock_logger_info.called)
 
@@ -82,7 +82,7 @@ class TestKafkaApiMethods(unittest.TestCase):
         kafka.update_topic_list = [{'name': 'topic1', 'partitions': 1, 'replication_factors': 1}]
         # Same number of partitions as existing
         kafka.update_topics(recreate_topic=False)
-        self.assertEqual(mock_logger_info.call_count, 1)
+        self.assertEqual(mock_logger_info.call_count, 2)
 
         kafka.update_topic_list = [{'name': 'topic1', 'partitions': 2, 'replication_factors': 1}]
         # Increase number of partitions
@@ -97,7 +97,7 @@ class TestKafkaApiMethods(unittest.TestCase):
         f.set_result(None)
         mock_create_partitions.return_value = {'testTopic1': None, 'testTopic2': f}
         kafka.update_topics(recreate_topic=False)
-        self.assertEqual(mock_logger_info.call_count, 1)
+        self.assertEqual(mock_logger_info.call_count, 2)
 
         # Increase number of partitions - Error
         self.assertEqual(mock_logger_error.call_count, 1)
@@ -119,7 +119,7 @@ class TestKafkaApiMethods(unittest.TestCase):
         kafka.update_topic_list = [{'name': 'topic2', 'partitions': 0, 'replication_factors': 1}]
         mock_logger_info.reset_mock()
         kafka.update_topics()
-        self.assertEqual(mock_logger_info.call_count, 1)
+        self.assertEqual(mock_logger_info.call_count, 2)
 
     def test_convert_to_bool(self):
         self.assertFalse(kafka._convert_to_bool(None))
@@ -128,8 +128,8 @@ class TestKafkaApiMethods(unittest.TestCase):
         self.assertFalse(kafka._convert_to_bool('False'))
         self.assertFalse(kafka._convert_to_bool('None'))
         self.assertTrue(kafka._convert_to_bool('True'))
-        self.assertTrue(kafka._convert_to_bool('TRUE'))        
-        
+        self.assertTrue(kafka._convert_to_bool('TRUE'))
+
 
 if __name__ == '__main__':
     unittest.main()

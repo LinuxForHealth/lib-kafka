@@ -22,13 +22,14 @@ WHI_CAF_KAFKA_LIB_INVALID_OPERATION = ('CAFKAFKALIBWARN003', 'Invalid Operation:
                                                              'UPDATE or DELETE')
 WHI_CAF_KAFKA_LIB_LOAD_CONFIG = ('CAFKAFKALIBLOG001', 'loading config file {}')
 
-WHI_CAF_KAFKA_LIB_CREATE_TOPIC_SUCCESS = ('CAFKAFKALIBLOG002', 'Topic {} created successfully')
-WHI_CAF_KAFKA_LIB_CREATE_TOPIC_FAIL = ('CAFKAFKALIBERR003', 'Failed to create topic {}: {}')
+WHI_CAF_KAFKA_LIB_CREATE_TOPIC_SUCCESS = ('CAFKAFKALIBLOG002', 'Topic "{}" created successfully')
+WHI_CAF_KAFKA_LIB_CREATE_TOPIC_FAIL = ('CAFKAFKALIBERR003', 'Failed to create topic "{}": {}')
 
-WHI_CAF_KAFKA_LIB_DELETE_TOPIC_SUCCESS = ('CAFKAFKALIBLOG003', 'Topic {} deleted successfully')
-WHI_CAF_KAFKA_LIB_DELETE_TOPIC_FAIL = ('CAFKAFKALIBERR004', 'Failed to delete topic {}: {}')
+WHI_CAF_KAFKA_LIB_DELETE_TOPIC_SUCCESS = ('CAFKAFKALIBLOG003', 'Topic "{}" deleted successfully')
+WHI_CAF_KAFKA_LIB_DELETE_TOPIC_FAIL = ('CAFKAFKALIBERR004', 'Failed to delete topic "{}": {}')
 
-WHI_CAF_KAFKA_LIB_ADD_PARTITION_SUCCESS = ('CAFKAFKALIBLOG004', 'Additional partitions created for topic {}')
+WHI_CAF_KAFKA_LIB_ADD_PARTITION_SUCCESS = ('CAFKAFKALIBLOG004', 'Additional partitions created for topic "{}". Total '
+                                                                'partition count is now: {}')
 WHI_CAF_KAFKA_LIB_ADD_PARTITION_FAIL = ('CAFKAFKALIBERR005', 'Failed to add partitions to topic {}: {}')
 WHI_CAF_KAFKA_LIB_PARTITION_NUM_EQUAL = ('CAFKAFKALIBLOG005', 'Current partition size: {} is already equal to '
                                                               'requested partition size: {} for topic {}')
@@ -39,5 +40,14 @@ WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS_AND_NOT_RECREATE = ('CAFKAFKALIBLOG007', 'P
                                                                               'topic. For recreating a topic with new'
                                                                               ' partition call this function with '
                                                                               'recreate_topic value as True')
-WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS_AND_RECREATE = ('CAFKAFKALIBLOG008', 'Recreating topic {}')
-WHI_CAF_LIB_TOPIC_NOT_FOUND = ('CAFKAFKALIBLOG009', 'Topic: {} NOT found!')
+WHI_CAF_KAFKA_LIB_PARTITION_NUM_LESS_AND_RECREATE = ('CAFKAFKALIBLOG008', 'Recreating topic "{}" with partition size: '
+                                                                          '{}')
+WHI_CAF_LIB_TOPIC_NOT_FOUND = ('CAFKAFKALIBLOG009', 'Topic "{}" NOT found!')
+WHI_CAF_LIB_TOPIC_EXISTS = ('CAFKAFKALIBLOG010', 'Topic "{}" already exist!')
+WHI_CAF_LIB_TOPIC_NOT_EXISTS = ('CAFKAFKALIBLOG011', 'Topic "{}" does not exist so it can not be deleted!')
+WHI_CAF_LIB_TOPIC_START_CREATE = ('CAFKAFKALIBLOG012', 'Started creating topic...')
+WHI_CAF_LIB_TOPIC_START_DELETE = ('CAFKAFKALIBLOG013', 'Started deleting topic...')
+WHI_CAF_LIB_TOPIC_START_UPDATE = ('CAFKAFKALIBLOG013', 'Started updating topic...')
+WHI_CAF_LIB_CONNECTION_TIMEOUT = ('CAFKAFKALIBERR006', 'Connection to broker "{}" timed out while attempting to '
+                                                       'create topic "{}": {}')
+
