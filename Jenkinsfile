@@ -24,7 +24,7 @@ String APPSCAN_APP_ID="e6df4e91-77a9-4d34-a554-e87663f1b299"
 
 pipeline {
     agent {
-        label 'whis-bld02'
+        label 'whi_basic_build'
     }
 
     stages {
