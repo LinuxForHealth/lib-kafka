@@ -14,16 +14,18 @@
 
 buildscript {
     repositories {
-        maven {
-            url 'http://repo1.maven.org/maven2'
-            url "https://plugins.gradle.org/m2/"
-        }
-        metadataSources {
+		maven {
+            url "https://na.artifactory.swg-devops.com/artifactory/wh-imaging-external-maven-virtual"
+            credentials {
+                username = "${taasArtifactoryUsername}"
+                password = "${taasArtifactoryPassword}"
+            }
+            metadataSources {
                 mavenPom()
                 artifact()
+            }
         }
-        jcenter()
-    }
+	}
     dependencies {
         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.8"
         classpath 'ru.vyarus:gradle-use-python-plugin:1.2.0'
