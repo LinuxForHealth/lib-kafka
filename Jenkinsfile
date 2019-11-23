@@ -42,13 +42,12 @@ pipeline {
 
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'WHIDevOps-jfrog-cred',
                                     usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-
                     withCredentials([[$class: 'ZipFileBinding', credentialsId: "WHIDevOps-docker-config", variable: 'DOCKER_CONFIG']]) {
                         script {
                             buildUtilImage = docker.image("${DOCKER_REGISTRY}/${BUILD_UTIL_IMAGE}")
                             buildUtilImage.pull()
                             buildUtilImage.inside {
-                                sh "export PIP_EXTRA_INDEX_URL=https://${USERNAME}:${PASSWORD}@na.artifactory.swg-devops.com/artifactory/api/pypi/wh-imaging-pypi-virtual/simple; ./gradlew clean build coverage"
+                                sh "export PIP_EXTRA_INDEX_URL=https://${USERNAME}:${PASSWORD}@na.artifactory.swg-devops.com/artifactory/api/pypi/wh-imaging-pypi-local/simple; ./gradlew -PtaasArtifactoryUsername=$USERNAME -PtaasArtifactoryPassword=$PASSWORD --info clean build coverage"
                             }
                         }
                     }
