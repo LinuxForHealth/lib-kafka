@@ -13,10 +13,12 @@
 # ******************************************************************************/
 
 from unittest import mock
+from unittest.mock import MagicMock
 from whi_caf_lib_kafka import kafka
 import unittest
 import concurrent.futures
 from confluent_kafka.admin import ClusterMetadata, TopicMetadata, PartitionMetadata
+from confluent_kafka import KafkaError, KafkaException
 
 
 class TestKafkaApiMethods(unittest.TestCase):
@@ -41,6 +43,45 @@ class TestKafkaApiMethods(unittest.TestCase):
         self.assertEqual(mock_create_topics.call_count, 1)
         self.assertTrue(mock_logger_error.called)
         self.assertTrue(mock_logger_info.called)
+
+        mock_create_topics.reset_mock()
+        mock_logger_info.reset_mock()
+        kafka_error = MagicMock()
+        kafka_error.code.return_value = KafkaError.TOPIC_ALREADY_EXISTS
+        f.result = MagicMock(side_effect=KafkaException(kafka_error))
+        mock_create_topics.return_value = {'testTopic1': f}
+        kafka.create_topics()
+        self.assertTrue(mock_logger_info.called)
+
+        mock_create_topics.reset_mock()
+        mock_logger_error.reset_mock()
+        kafka_error = MagicMock()
+        kafka_error.code.return_value = KafkaError._TIMED_OUT
+        f.result = MagicMock(side_effect=KafkaException(kafka_error))
+        mock_create_topics.return_value = {'testTopic1': f}
+        kafka.create_topics()
+        self.assertTrue(mock_logger_error.called)
+        self.assertTrue(mock_sys_exit.called)
+
+        mock_create_topics.reset_mock()
+        mock_logger_error.reset_mock()
+        kafka_error = MagicMock()
+        kafka_error.code.return_value = KafkaError.CLUSTER_AUTHORIZATION_FAILED
+        f.result = MagicMock(side_effect=KafkaException(kafka_error))
+        mock_create_topics.return_value = {'testTopic1': f}
+        kafka.create_topics()
+        self.assertTrue(mock_logger_error.called)
+        self.assertTrue(mock_sys_exit.called)
+
+        mock_create_topics.reset_mock()
+        mock_logger_error.reset_mock()
+        f.result = MagicMock(side_effect=Exception)
+        mock_create_topics.return_value = {'testTopic1': f}
+        kafka.create_topics()
+        self.assertTrue(mock_logger_error.called)
+        self.assertTrue(mock_sys_exit.called)
+
+        mock_create_topics.reset_mock()
 
     @mock.patch("confluent_kafka.admin.AdminClient.delete_topics")
     @mock.patch("caf_logger.logger.CAFLogger.error")
