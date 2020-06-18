@@ -1,26 +1,26 @@
 /*******************************************************************************
- * IBM Watson Imaging Common Application Framework 3.0                         *
- *                                                                             *
- * IBM Confidential                                                            *
- *                                                                             *
- * OCO Source Materials                                                        *
- *                                                                             *
- * (C) Copyright IBM Corp. 2019                                                *
- *                                                                             *
- * The source code for this program is not published or otherwise              *
- * divested of its trade secrets, irrespective of what has been                *
- * deposited with the U.S. Copyright Office.                                   *
- *******************************************************************************/
- 
+* IBM Watson Imaging Common Application Framework 4.0                         *
+*                                                                             *
+* IBM Confidential                                                            *
+*                                                                             *
+* OCO Source Materials                                                        *
+*                                                                             *
+*  Copyright IBM Corporation 2019, 2020                                       *
+*                                                                             *
+* The source code for this program is not published or otherwise              *
+* divested of its trade secrets, irrespective of what has been                *
+* deposited with the U.S. Copyright Office.                                   *
+*******************************************************************************/
+
 String DOCKER_REGISTRY="wh-imaging-dev-docker-local.artifactory.swg-devops.com"
 String BUILD_UTIL_IMAGE="whi-image-python37-build-util:latest"
-String VERSION="3.0.0"
+String VERSION="4.0.0"
 String SLACK_CHANNEL="#whi-caf-builds"
 boolean NOTIFY_PR_IN_SLACK=true
 String MAINLINE_BRANCH="master"
 String GIT_REPO='WH-Imaging/whi-caf-lib-kafka'
 String PROJECT_NAME="whi-caf-lib-kafka"
-String APPSCAN_APP_ID="e6df4e91-77a9-4d34-a554-e87663f1b299"
+String APPSCAN_APP_ID="d17068aa-19d5-430e-bd4d-76637a0b4f0b"
 
 pipeline {
     agent {
@@ -58,7 +58,7 @@ pipeline {
         stage('SonarQube') {
             steps {
                 withSonarQubeEnv('whi-sonar') {
-                    
+
                     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'WHIDevOps-jfrog-cred',
                                       usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
                         script{
@@ -127,10 +127,10 @@ pipeline {
                                 sh "./gradlew -PtaasArtifactoryUsername=$USERNAME -PtaasArtifactoryPassword=$PASSWORD uploadArchives"
                             }
                         }
-                        
+
                     }
                 }
-                
+
             }
         }
         stage('Copyright Check') {
@@ -138,11 +138,11 @@ pipeline {
                 expression {
                 return "${BRANCH_NAME}" == "master" || "${BRANCH_NAME}" =~ /^release-/
                 }
-            }            
+            }
     		steps {
     			copyCheck failOnError: false
     		}
-		}        
+		}
     }
 
     post {

@@ -1,16 +1,16 @@
- /*******************************************************************************
- * IBM Watson Imaging Common Application Framework 3.0                         *
- *                                                                             *
- * IBM Confidential                                                            *
- *                                                                             *
- * OCO Source Materials                                                        *
- *                                                                             *
- * (C) Copyright IBM Corp. 2019                                                *
- *                                                                             *
- * The source code for this program is not published or otherwise              *
- * divested of its trade secrets, irrespective of what has been                *
- * deposited with the U.S. Copyright Office.                                   *
- *******************************************************************************/
+/*******************************************************************************
+* IBM Watson Imaging Common Application Framework 4.0                         *
+*                                                                             *
+* IBM Confidential                                                            *
+*                                                                             *
+* OCO Source Materials                                                        *
+*                                                                             *
+*  Copyright IBM Corporation 2019, 2020                                       *
+*                                                                             *
+* The source code for this program is not published or otherwise              *
+* divested of its trade secrets, irrespective of what has been                *
+* deposited with the U.S. Copyright Office.                                   *
+*******************************************************************************/
 
 buildscript {
     repositories {
@@ -36,7 +36,7 @@ apply plugin: 'ru.vyarus.use-python'
 apply plugin: 'org.sonarqube'
 
 group = 'com.ibm.watson.health.imaging'
-version = "3.0.0"
+version = "4.0.0"
 description = """CAF lib kafka"""
 
 sonarqube {
@@ -64,7 +64,7 @@ python {
     pip 'yarl:1.3.0'
     pip 'async-timeout:3.0.1'
     pip 'confluent-kafka:1.2.0'
-    pip 'whi-caf-lib-python-logger:3.0.0'
+    pip 'whi-caf-lib-python-logger:4.0.0'
     //Python dependencies end
 
     envPath = 'build/venv'
@@ -110,12 +110,12 @@ task whiCafPyTestPrep(type: PythonTask) {
 }
 
 task whiCafPyTest(type: PythonTask) {
-    module = 'pytest' 
+    module = 'pytest'
     extraArgs = [pyTestDir, '--junitxml='+pyTestReportPath, '-v']
 }
 
 task whiCafPyCoverage(type: PythonTask) {
-    module = 'pytest' 
+    module = 'pytest'
     extraArgs = [pyTestDir, '--cov', pySrcDir, '--cov-report=xml:'+pyXmlCoveragePath, '--cov-report=html:'+pyHtmlCoveragePath, '--cov-report=term']
 }
 
@@ -132,7 +132,7 @@ task whiCafPyPublishArtifacts(type: PythonTask) {
         def taasArtifactoryUsername = "${taasArtifactoryUsername}"
         def taasArtifactoryPassword = "${taasArtifactoryPassword}"
         module = 'twine'
-        extraArgs = ['upload', '--repository-url', whiPypiRepositoryUrl, '-u', taasArtifactoryUsername, '-p', taasArtifactoryPassword, pyDistDir+'/*.whl'] 
+        extraArgs = ['upload', '--repository-url', whiPypiRepositoryUrl, '-u', taasArtifactoryUsername, '-p', taasArtifactoryPassword, pyDistDir+'/*.whl']
     }
 }
 
