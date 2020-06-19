@@ -1,5 +1,5 @@
 /*******************************************************************************
-* IBM Watson Imaging Common Application Framework 4.0                         *
+* IBM Watson Imaging Common Application Framework 3.1                         *
 *                                                                             *
 * IBM Confidential                                                            *
 *                                                                             *
@@ -36,7 +36,7 @@ apply plugin: 'ru.vyarus.use-python'
 apply plugin: 'org.sonarqube'
 
 group = 'com.ibm.watson.health.imaging'
-version = "4.0.0"
+version = "3.1.0"
 description = """CAF lib kafka"""
 
 sonarqube {
@@ -64,7 +64,7 @@ python {
     pip 'yarl:1.3.0'
     pip 'async-timeout:3.0.1'
     pip 'confluent-kafka:1.2.0'
-    pip 'whi-caf-lib-python-logger:4.0.0'
+    pip 'whi-caf-lib-python-logger:3.1.0'
     //Python dependencies end
 
     envPath = 'build/venv'

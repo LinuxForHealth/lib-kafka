@@ -1,5 +1,5 @@
 /*******************************************************************************
-* IBM Watson Imaging Common Application Framework 4.0                         *
+* IBM Watson Imaging Common Application Framework 3.1                         *
 *                                                                             *
 * IBM Confidential                                                            *
 *                                                                             *
@@ -14,7 +14,7 @@
 
 String DOCKER_REGISTRY="wh-imaging-dev-docker-local.artifactory.swg-devops.com"
 String BUILD_UTIL_IMAGE="whi-image-python37-build-util:latest"
-String VERSION="4.0.0"
+String VERSION="3.1.0"
 String SLACK_CHANNEL="#whi-caf-builds"
 boolean NOTIFY_PR_IN_SLACK=true
 String MAINLINE_BRANCH="master"
