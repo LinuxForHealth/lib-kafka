@@ -11,14 +11,15 @@
 # divested of its trade secrets, irrespective of what has been                *
 # deposited with the U.S. Copyright Office.                                   *
 # ******************************************************************************/
+import os
 import sys
 from time import sleep
-from confluent_kafka.admin import AdminClient, NewTopic, NewPartitions, KafkaException
+
+import caf_logger.logger as caflogger
 from confluent_kafka import KafkaError
+from confluent_kafka.admin import AdminClient, NewTopic, NewPartitions, KafkaException
 from whi_caf_lib_kafka import logging_codes
 from whi_caf_lib_kafka.config import broker_config, create_topic_list, update_topic_list, delete_topic_list
-import caf_logger.logger as caflogger
-import os
 
 logger = caflogger.get_logger('whi-caf-lib-kafka')
 

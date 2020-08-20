@@ -1,20 +1,21 @@
 # *******************************************************************************
-# IBM Watson Imaging Common Application Framework 3.0                         *
-#                                                                             *
-# IBM Confidential                                                            *
-#                                                                             *
-# OCO Source Materials                                                        *
-#                                                                             *
-# (C) Copyright IBM Corp. 2019                                                *
-#                                                                             *
-# The source code for this program is not published or otherwise              *
-# divested of its trade secrets, irrespective of what has been                *
-# deposited with the U.S. Copyright Office.                                   *
-# ******************************************************************************/
+# IBM Watson Imaging Common Application Framework 3.1                           *
+#                                                                               *
+# IBM Confidential                                                              *
+#                                                                               *
+# OCO Source Materials                                                          *
+#                                                                               *
+# Copyright IBM Corporation 2019, 2020                                          *
+#                                                                               *
+# The source code for this program is not published or otherwise                *
+# divested of its trade secrets, irrespective of what has been                  *
+# deposited with the U.S. Copyright Office.                                     *
+# *******************************************************************************
 
-import configparser
 import os
+
 import caf_logger.logger as caflogger
+from whi_caf_lib_configreader import config as configreader
 from whi_caf_lib_kafka import logging_codes
 
 logger = caflogger.get_logger('whi-caf-lib-kafka')
@@ -23,93 +24,50 @@ broker_config = None
 create_topic_list = []
 delete_topic_list = []
 update_topic_list = []
-broker_header = 'kafka broker'
-topic_header = 'kafka topic operation'
-broker_keys = ('bootstrap.servers', 'security.protocol', 'ssl.ca.location')
-topic_keys = ('name', 'partitions', 'replication_factor')
-topic_config_operation_keys = ('create_topics', 'delete_topics', 'update_topics')
-topic_config_operations = ('CREATE', 'UPDATE', 'DELETE')
-default_broker_config = {'bootstrap.servers': 'localhost:9092'}
+_BROKER_HEADER = 'kafka broker'
+_TOPIC_HEADER = 'kafka topic operation'
+_REQUIRED_BROKER_KEYS = ('bootstrap.servers', 'security.protocol', 'ssl.ca.location')
+_REQUIRED_TOPIC_KEYS = ('name', 'partitions', 'replication_factor')
 
-
-class InvalidConfigException(Exception):
-    pass
+_KEY_CREATE_TOPICS = 'create_topics'
+_KEY_UPDATE_TOPICS = 'update_topics'
+_KEY_DELETE_TOPICS = 'delete_topics'
+_TOPIC_CONFIG_OPERATION_KEYS = [_KEY_CREATE_TOPICS, _KEY_UPDATE_TOPICS, _KEY_DELETE_TOPICS]
+_CREATE_OPERATION = 'CREATE'
+_UPDATE_OPERATION = 'UPDATE'
+_DELETE_OPERATION = 'DELETE'
+_TOPIC_CONFIG_OPERATIONS = [_CREATE_OPERATION, _UPDATE_OPERATION, _DELETE_OPERATION]
+_DEFAULT_BROKER_CONFIG = {'bootstrap.servers': 'localhost:9092'}
 
 
 def load_broker_config(config_file):
     global broker_config
-    broker_config = {}
+
     logger.info(logging_codes.WHI_CAF_KAFKA_LIB_LOAD_CONFIG, config_file)
-    configfile = configparser.ConfigParser()
-    configfile.optionxform = str
-    configfile.read(config_file)
-    if broker_header not in configfile.sections():
-        logger.error(logging_codes.WHI_CAF_KAFKA_LIB_INVALID_CONFIG_HEADER, 'broker', 'kafka broker')
-        raise InvalidConfigException('kafka broker header not found.')
-    temp_config = configfile[broker_header]
-
-    if not validate_broker_config(temp_config):
-        raise InvalidConfigException('Missing keys')
-    broker_config['bootstrap.servers'] = temp_config['bootstrap.servers']
-    broker_config['security.protocol'] = temp_config['security.protocol']
-    broker_config['ssl.ca.location'] = temp_config['ssl.ca.location']
+    config = configreader.load_config(config_file)
+    configreader.validate_config(config, _BROKER_HEADER, _REQUIRED_BROKER_KEYS)
+    broker_config = config[_BROKER_HEADER]
 
 
-def load_topic_config(config_file, topic_config_operation):
+def load_topic_config(config_file, topic_operation):
     global create_topic_list
     global update_topic_list
     global delete_topic_list
     logger.info(logging_codes.WHI_CAF_KAFKA_LIB_LOAD_CONFIG, config_file)
-    configfile = configparser.ConfigParser()
-    configfile.optionxform = str
-    configfile.read(config_file)
-    if topic_header not in configfile.sections():
-        logger.error(logging_codes.WHI_CAF_KAFKA_LIB_INVALID_CONFIG_HEADER, 'topic', 'kafka topic operation')
-        raise InvalidConfigException('kafka topic operation header not found.')
-
-    if not validate_topic_operation_config(configfile[topic_header]):
-        raise InvalidConfigException('Missing keys. Expected keys are create_topics, update_topics and '
-                                     'delete_topics')
-    if (topic_config_operation == 'CREATE') and ('create_topics' in configfile[topic_header]):
-        _load_topic_list(configfile, create_topic_list, 'create_topics')
-    if (topic_config_operation == 'UPDATE') and ('update_topics' in configfile[topic_header]):
-        _load_topic_list(configfile, update_topic_list, 'update_topics')
-    if (topic_config_operation == 'DELETE') and ('delete_topics' in configfile[topic_header]):
-        _load_topic_list(configfile, delete_topic_list, 'delete_topics')
+    config = configreader.load_config(config_file)
+    configreader.validate_config(config, _TOPIC_HEADER, _TOPIC_CONFIG_OPERATION_KEYS)
+    if topic_operation == _CREATE_OPERATION:
+        _load_topic_list(config, create_topic_list, _KEY_CREATE_TOPICS)
+    if topic_operation == _UPDATE_OPERATION:
+        _load_topic_list(config, update_topic_list, _KEY_UPDATE_TOPICS)
+    if topic_operation == _DELETE_OPERATION:
+        _load_topic_list(config, delete_topic_list, _KEY_DELETE_TOPICS)
 
 
 def _load_topic_list(configfile, topic_list, operation_header):
-    for topic in configfile[topic_header][operation_header].split(","):
-        if validate_topic_config(configfile[topic]):
-            topic_list.append(configfile[topic])
-        else:
-            raise InvalidConfigException('Missing keys. Expected keys are name, partitions and '
-                                         'replication_factor')
-
-
-def validate_broker_config(config):
-    valid = True
-    for key in broker_keys:
-        if key not in config:
-            logger.error(logging_codes.WHI_CAF_KAFKA_LIB_INVALID_CONFIG_PARAMETER, 'broker', key)
-            valid = False
-    return valid
-
-
-def validate_topic_config(config):
-    valid = True
-    for key in topic_keys:
-        if key not in config.keys():
-            logger.error(logging_codes.WHI_CAF_KAFKA_LIB_INVALID_CONFIG_PARAMETER, 'topic', key)
-            valid = False
-    return valid
-
-
-def validate_topic_operation_config(config):
-    for key in topic_config_operation_keys:
-        if key in config.keys():
-            return True
-    return False
+    for topic in configfile[_TOPIC_HEADER][operation_header].split(","):
+        configreader.validate_config(configfile, topic, _REQUIRED_TOPIC_KEYS)
+        topic_list.append(configfile[topic])
 
 
 broker_config_path = os.getenv('CAF_KAFKA_BROKER_CONFIG_FILE', default='/var/app/config/caf-kafka.cfg')
@@ -124,9 +82,9 @@ if (broker_config_path or topic_config_path) is None:
 elif not (os.path.exists(broker_config_path) and os.path.isfile(broker_config_path) and os.path.exists(
         topic_config_path)) or not os.path.isfile(topic_config_path):
     logger.warn(logging_codes.WHI_CAF_KAFKA_LIB_MISSING_CONFIG_FILE)
-    broker_config = default_broker_config
+    broker_config = _DEFAULT_BROKER_CONFIG
 else:
-    if topic_config_operation not in topic_config_operations:
+    if topic_config_operation not in _TOPIC_CONFIG_OPERATIONS:
         logger.warn(logging_codes.WHI_CAF_KAFKA_LIB_INVALID_OPERATION, topic_config_operation)
     else:
         load_broker_config(broker_config_path)

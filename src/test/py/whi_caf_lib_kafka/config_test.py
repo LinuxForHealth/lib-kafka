@@ -15,13 +15,9 @@
 import configparser
 import os
 import unittest
-import caf_logger.logger as caflogger
-import importlib
 
-from logging import CRITICAL
-
+from whi_caf_lib_configreader.exceptions import CAFConfigError
 from whi_caf_lib_kafka import config
-from whi_caf_lib_kafka.config import InvalidConfigException
 
 test_broker_config_file_name = 'test_broker_config.ini'
 test_topic_config_file_name = 'test_topic_config.ini'
@@ -32,18 +28,18 @@ test_broker_missingKeys = 'missingKeys.ini'
 test_config_missingKeys = 'missing_config_keys.ini'
 test_config_missingKeys_operation = 'missing_config_keys_operation.ini'
 
+
 def get_resource_path(file_name):
     package_directory = os.path.dirname(os.path.abspath(__file__))
     root_path = "/../../resources"
     file = os.path.join(package_directory + root_path, file_name)
-    print(file+" is the path name")
+    print(file + " is the path name")
     return file
 
 
 def setup_env_variable(config_kafka_broker_file_path, config_kafka_topic_config_file_path):
     os.environ['CAF_KAFKA_BROKER_CONFIG_FILE'] = config_kafka_broker_file_path
     os.environ['CAF_KAFKA_TOPIC_CONFIG_FILE'] = config_kafka_topic_config_file_path
-
 
 
 class TestConfigMethods(unittest.TestCase):
@@ -112,7 +108,6 @@ class TestConfigMethods(unittest.TestCase):
         with open(test_config_missingKeys_operation, 'w') as topic_config_file_missingKeys_operation:
             test_config_topic_missingKeys_operation.write(topic_config_file_missingKeys_operation)
 
-
     def test_load_broker_config(self):
         config.config = None
         config.load_broker_config(test_broker_config_file_name)
@@ -120,20 +115,16 @@ class TestConfigMethods(unittest.TestCase):
         self.assertEqual(config.broker_config["bootstrap.servers"], 'localhost:9093')
 
         # Non existing file
-        with self.assertRaises(InvalidConfigException) as ex:
+        with self.assertRaises(CAFConfigError) as ex:
             config.load_broker_config(test_broker_file_name_non_exist)
 
-        #broker header not found
-        with self.assertRaises(InvalidConfigException) as ex1:
+        # broker header not found
+        with self.assertRaises(CAFConfigError) as ex1:
             config.load_broker_config(test_broker_without_kafka_header)
 
-
         # Missing keys
-        with self.assertRaises(InvalidConfigException) as ex1:
+        with self.assertRaises(CAFConfigError) as ex1:
             config.load_broker_config(test_broker_missingKeys)
-
-
-
 
     def test_load_topic_config(self):
         config.create_topic_list = []
@@ -168,23 +159,21 @@ class TestConfigMethods(unittest.TestCase):
         self.assertEqual(config.delete_topic_list[0]['name'], 'testTopic2')
         self.assertEqual(config.delete_topic_list[1]['name'], 'testTopic3')
 
-
-        #invalid config exception
-        with self.assertRaises(InvalidConfigException) as ex:
-            config.load_topic_config(test_topic_config_file_name_exception,'TEST')
+        # invalid config exception
+        with self.assertRaises(CAFConfigError) as ex:
+            config.load_topic_config(test_topic_config_file_name_exception, 'TEST')
 
         #
-        with self.assertRaises(InvalidConfigException) as ex:
-            config.load_topic_config(test_config_missingKeys,'CREATE')
+        with self.assertRaises(CAFConfigError) as ex:
+            config.load_topic_config(test_config_missingKeys, 'CREATE')
 
-        with self.assertRaises(InvalidConfigException) as ex:
-            config.load_topic_config(test_config_missingKeys_operation,'CREATE')
+        with self.assertRaises(CAFConfigError) as ex:
+            config.load_topic_config(test_config_missingKeys_operation, 'CREATE')
 
-        with self.assertRaises(InvalidConfigException) as ex:
-            config.load_topic_config(test_config_missingKeys_operation,'TEST')
+        with self.assertRaises(CAFConfigError) as ex:
+            config.load_topic_config(test_config_missingKeys_operation, 'TEST')
 
         config.broker_config_path = None
-
 
     def tearDown(self) -> None:
         os.remove(test_broker_config_file_name)
