@@ -14,3 +14,7 @@ coverage.xml
 .pytest_cache
 .settings
 .project
+missing_config_keys.ini
+missing_config_keys_operation.ini
+missingKeys.ini
+test_broker_without_header_config.ini
