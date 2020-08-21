@@ -46,7 +46,7 @@ def load_broker_config(config_file):
     logger.info(logging_codes.WHI_CAF_KAFKA_LIB_LOAD_CONFIG, config_file)
     config = configreader.load_config(config_file)
     configreader.validate_config(config, _BROKER_HEADER, _REQUIRED_BROKER_KEYS)
-    broker_config = config[_BROKER_HEADER]
+    broker_config = {**_DEFAULT_BROKER_CONFIG, **config[_BROKER_HEADER]}
 
 
 def load_topic_config(config_file, topic_operation):
@@ -78,7 +78,6 @@ topic_config_operation = os.getenv('CAF_KAFKA_TOPIC_OPERATION',
 if (broker_config_path or topic_config_path) is None:
     logger.warn(logging_codes.WHI_CAF_KAFKA_LIB_MISSING_CONFIG_ENV, 'CAF_KAFKA_BROKER_CONFIG_FILE',
                 'CAF_KAFKA_TOPIC_CONFIG_FILE')
-
 elif not (os.path.exists(broker_config_path) and os.path.isfile(broker_config_path) and os.path.exists(
         topic_config_path)) or not os.path.isfile(topic_config_path):
     logger.warn(logging_codes.WHI_CAF_KAFKA_LIB_MISSING_CONFIG_FILE)
