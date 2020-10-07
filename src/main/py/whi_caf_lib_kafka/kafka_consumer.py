@@ -51,7 +51,7 @@ class KafkaConsumer:
         if self.consumer is None:
             logger.error(logging_codes.WHI_CAF_KAFKA_CONSUMER_NOT_INITIALIZED)
             raise ValueError('cannot start listening when consumer is not initialized')
-        self.tasks = [create_task(self._listening_task(callback)) for i in range(self.concurrent_listeners)]
+        self.tasks = [create_task(self._listening_task(callback)) for _ in range(self.concurrent_listeners)]
         self.monitor_task = create_task(self._task_monitor(self.tasks))
         while not self.done:
             try:
@@ -80,9 +80,7 @@ class KafkaConsumer:
         while True:
             msgs = await loop.run_in_executor(None, self.consumer.consume, 1)
             for msg in msgs:
-                if msg is None:
-                    pass
-                elif msg.error():
+                if msg.error():
                     logger.error(logging_codes.WHI_CAF_KAFKA_CONSUMER_ERROR, msg.error())
 
                 await callback(msg)
