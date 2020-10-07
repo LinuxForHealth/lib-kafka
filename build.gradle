@@ -63,7 +63,7 @@ python {
 
 task whiCafPySetupBuild(type: PythonTask) {
     module = 'pip'
-    extraArgs = ['install', 'pytest==4.6.3', 'pytest-cov==2.7.1', 'twine==1.14.0', 'flake8==3.7.8']
+    extraArgs = ['install', 'pytest==4.6.3', 'pytest-cov==2.7.1', 'twine==1.14.0', 'flake8==3.7.8', 'asynctest==0.13.0']
 }
 
 task whiCafPyGenerateReqs {
