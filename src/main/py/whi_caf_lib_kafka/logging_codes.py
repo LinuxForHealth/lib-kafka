@@ -71,7 +71,3 @@ WHI_CAF_KAFKA_COMMITTING_MESSAGE = ('CAFKAFKALIBLOG018', 'Committing message')
 
 # Monitor
 WHI_CAF_KAFKA_MONITOR_LOG = ('CAFKAFKALIBMON001', 'MONITOR: total active listeners: {}')
-
-
-
-

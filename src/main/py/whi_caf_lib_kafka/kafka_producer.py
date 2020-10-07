@@ -12,10 +12,8 @@
 # deposited with the U.S. Copyright Office.                                     *
 # *******************************************************************************
 
-from asyncio import create_task, gather, get_event_loop, sleep, get_running_loop
+from asyncio import get_running_loop
 from confluent_kafka import Producer
-import time
-import random
 
 import caf_logger.logger as caflogger
 from whi_caf_lib_kafka import logging_codes
@@ -41,7 +39,7 @@ class KafkaProducer:
         def set_asyncio_result(err, msg):
             if err is not None:
                 logger.warn(logging_codes.WHI_CAF_KAFKA_LIB_MESSAGE_DELIVERY_FAILED, err)
-                loop.call_soon_threadsafe(asyncio_callback.set_exception, err)
+                loop.call_soon_threadsafe(asyncio_callback.set_exception, Exception(err))
             else:
                 logger.info(logging_codes.WHI_CAF_KAFKA_MESSAGE_DELIVERED)
                 loop.call_soon_threadsafe(asyncio_callback.set_result, msg)
@@ -55,12 +53,8 @@ class KafkaProducer:
         loop = self._get_running_loop()
         future = loop.create_future()
         self.producer.produce(topic_to_send, msg, key=key, callback=self._kafka_callback(loop, future), headers=headers)
-        await loop.run_in_executor(None, self.producer.flush)
         logger.info(logging_codes.WHI_CAF_KAFKA_MESSAGE_QUEUED)
+        await loop.run_in_executor(None, self.producer.flush)
         await future
 
-        return future.result(), future.exception()
-
-    def close_producer(self):
-        if self.producer is not None:
-            self.producer.close()
+        return future.result()
