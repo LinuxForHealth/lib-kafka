@@ -75,16 +75,21 @@ topic_config_path = os.getenv('CAF_KAFKA_TOPIC_CONFIG_FILE', default='/var/app/c
 topic_config_operation = os.getenv('CAF_KAFKA_TOPIC_OPERATION',
                                    default='CREATE')  # CREATE, UPDATE or DELETE are valid values
 
-if (broker_config_path or topic_config_path) is None:
-    logger.warn(logging_codes.WHI_CAF_KAFKA_LIB_MISSING_CONFIG_ENV, 'CAF_KAFKA_BROKER_CONFIG_FILE',
-                'CAF_KAFKA_TOPIC_CONFIG_FILE')
-elif not (os.path.exists(broker_config_path) and os.path.isfile(broker_config_path) and os.path.exists(
-        topic_config_path)) or not os.path.isfile(topic_config_path):
-    logger.warn(logging_codes.WHI_CAF_KAFKA_LIB_MISSING_CONFIG_FILE)
+
+if broker_config_path is None:
+    logger.warn(logging_codes.WHI_CAF_KAFKA_LIB_MISSING_CONFIG_ENV, 'CAF_KAFKA_BROKER_CONFIG_FILE')
+elif not os.path.exists(broker_config_path) or not os.path.isfile(broker_config_path):
+    logger.warn(logging_codes.WHI_CAF_KAFKA_LIB_MISSING_CONFIG_FILE, broker_config_path)
     broker_config = _DEFAULT_BROKER_CONFIG
+else:
+    load_broker_config(broker_config_path)
+
+if topic_config_path is None:
+    logger.warn(logging_codes.WHI_CAF_KAFKA_LIB_MISSING_CONFIG_ENV, 'CAF_KAFKA_TOPIC_CONFIG_FILE')
+elif not os.path.exists(topic_config_path) or not os.path.isfile(topic_config_path):
+    logger.warn(logging_codes.WHI_CAF_KAFKA_LIB_MISSING_CONFIG_FILE, topic_config_path)
 else:
     if topic_config_operation not in _TOPIC_CONFIG_OPERATIONS:
         logger.warn(logging_codes.WHI_CAF_KAFKA_LIB_INVALID_OPERATION, topic_config_operation)
     else:
-        load_broker_config(broker_config_path)
         load_topic_config(topic_config_path, topic_config_operation)

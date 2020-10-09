@@ -41,19 +41,27 @@ class TestKafkaProducer(asynctest.TestCase):
         producer.producer.flush = Mock()
         producer.producer.flush.side_effect = call_callback_success
         result = await producer.send_message('test message')
-        producer.producer.produce.assert_called_once()
+        producer.producer.produce.assert_called()
         self.assertIsNotNone(result)
 
         producer.producer.produce.side_effect = set_callback_function
         producer.producer.flush.side_effect = call_callback_failiure
         try:
             result = await producer.send_message('test_message')
+            self.fail('Expecteced Exception')
         except Exception as e:
             self.assertTrue(type(e) == Exception)
-        
+
+        try:
+            result = await producer.send_message(5)
+            self.fail('Expecteced Exception')
+        except Exception as e:
+            self.assertTrue(type(e) == ValueError)
+
         producer.producer = None
         try:
             result = await producer.send_message('test_message')
+            self.fail('Expecteced Exception')
         except Exception as e:
             self.assertTrue(type(e) == ValueError)
 

@@ -24,16 +24,17 @@ WHI_CAF_KAFKA_NO_ACTIVE_LOOP = ('CALKAFKALIBERR007', 'Invalid call to async prod
 WHI_CAF_KAFKA_PRODUCER_NOT_INITIALIZED = ('CALKAFKALIBERR008', 'Cannot send message when producer is not initialized')
 WHI_CAF_KAFKA_CONSUMER_NOT_INITIALIZED = ('CALKAFKALIBERR009', 'Cannot start listening when consumer is not initialized')
 WHI_CAF_KAFKA_CONSUMER_ERROR = ('CALKAFKALIBERR010', 'Consumer error: {}')
-
+WHI_CAF_KAFKA_INVALID_MSG_TYPE = ('CALKAFKALIBERR011', 'msg can only be of type bytes or string')
 # Warnings
-WHI_CAF_KAFKA_LIB_MISSING_CONFIG_ENV = ('CAFKAFKALIBWARN001', '{} or {} environment variables not defined. Loading '
+WHI_CAF_KAFKA_LIB_MISSING_CONFIG_ENV = ('CAFKAFKALIBWARN001', '{} environment variables not defined. Loading '
                                                               'default config...')
-WHI_CAF_KAFKA_LIB_MISSING_CONFIG_FILE = ('CAFKAFKALIBWARN002', 'Config file not found. Please check config file path '
+WHI_CAF_KAFKA_LIB_MISSING_CONFIG_FILE = ('CAFKAFKALIBWARN002', 'Config file {} not found. Please check config file path '
                                                                'and name...')
 WHI_CAF_KAFKA_LIB_INVALID_OPERATION = ('CAFKAFKALIBWARN003', 'Invalid Operation: {}. Supported operations are CREATE, '
                                                              'UPDATE or DELETE')
 WHI_CAF_KAFKA_LIB_MESSAGE_DELIVERY_FAILED = ('CALKAFKALIBWARN004', 'Message delivery failed: {}')
 WHI_CAF_KAFKA_LIB_LISTENER_EXITED = ('CALKAFKALIBWARN005', 'Listener exited with exception: {}')
+WHI_CAF_KAFKA_LIB_PURGING_MESSAGE_SEGMENTS = ('CALKAFKALIBWARN006', 'Purging message segments with identifier: {}')
 
 # Info
 WHI_CAF_KAFKA_LIB_LOAD_CONFIG = ('CAFKAFKALIBLOG001', 'loading config file {}')
