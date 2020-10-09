@@ -18,6 +18,7 @@ from confluent_kafka import Consumer
 import caf_logger.logger as caflogger
 from whi_caf_lib_kafka import logging_codes
 from whi_caf_lib_kafka.config import broker_config
+from whi_caf_lib_kafka.message_segmenter import combine_segments
 
 
 logger = caflogger.get_logger('whi-caf-lib-kafka')
@@ -83,11 +84,20 @@ class KafkaConsumer:
                 if msg.error():
                     logger.error(logging_codes.WHI_CAF_KAFKA_CONSUMER_ERROR, msg.error())
 
-                await callback(msg)
+                message = combine_segments(msg.value(), self._generate_header_dictionary(msg.headers()))
 
                 if not self.auto_commit_enabled:
                     logger.info(logging_codes.WHI_CAF_KAFKA_COMMITTING_MESSAGE)
                     self.consumer.commit(msg)
+
+                if message is not None:
+                    await callback(message)
+
+    def _generate_header_dictionary(self, headers):
+        headers_dict = {}
+        for key, value in headers:
+            headers_dict[key] = value
+        return headers_dict
 
     def close_consumer(self):
         self.done = True

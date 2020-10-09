@@ -12,21 +12,25 @@
 # deposited with the U.S. Copyright Office.                                     *
 # *******************************************************************************
 
-from asyncio import get_running_loop
+from asyncio import get_running_loop, gather
 from confluent_kafka import Producer
 
 import caf_logger.logger as caflogger
 from whi_caf_lib_kafka import logging_codes
+from whi_caf_lib_kafka.message_segmenter import segment_message, ID, COUNT, INDEX
 from whi_caf_lib_kafka.config import broker_config
 
 
 logger = caflogger.get_logger('whi-caf-lib-kafka')
 
+_DEFAULT_SEGMENT_SIZE = 900*1024
+
 
 class KafkaProducer:
-    def __init__(self, topic):
+    def __init__(self, topic, segment_size=None):
         self.producer = Producer(broker_config)
         self.topic = topic
+        self.segment_size = segment_size if segment_size is not None else _DEFAULT_SEGMENT_SIZE
 
     def _get_running_loop(self):
         try:
@@ -49,12 +53,27 @@ class KafkaProducer:
         if self.producer is None:
             logger.error(logging_codes.WHI_CAF_KAFKA_PRODUCER_NOT_INITIALIZED)
             raise ValueError('cannot send message when producer is not initialized')
+        if not type(msg) in [str, bytes]:
+            logger.error(logging_codes.WHI_CAF_KAFKA_INVALID_MSG_TYPE)
+            raise ValueError('msg can only be of type bytes or string')
+        if headers is None:
+            headers = {}
         topic_to_send = topic if topic is not None else self.topic
         loop = self._get_running_loop()
-        future = loop.create_future()
-        self.producer.produce(topic_to_send, msg, key=key, callback=self._kafka_callback(loop, future), headers=headers)
+        futures = []
+        for segment, identifier, count, index in segment_message(msg, self.segment_size):
+            segment_headers = {
+                ID: identifier,
+                COUNT: count,
+                INDEX: index
+            }
+            future = loop.create_future()
+            final_headers = {**headers, **segment_headers}
+            self.producer.produce(topic_to_send, segment, key=key, callback=self._kafka_callback(loop, future), headers=final_headers)
+            futures.append(future)
+
         logger.info(logging_codes.WHI_CAF_KAFKA_MESSAGE_QUEUED)
         await loop.run_in_executor(None, self.producer.flush)
-        await future
+        await gather(*futures)
 
-        return future.result()
+        return True
