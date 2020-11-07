@@ -19,7 +19,7 @@ whiBuild {
     imageVersion = "3.1.0"
 
     buildUtilImageRepo = "wh-imaging-dev-docker-local.artifactory.swg-devops.com"
-    buildUtilImage = "ubi8/whi-image-ubi8-python38-builder:latest"
+    buildUtilImage = "ubi8/whi-image-ubi8-advisor-p38-builder:latest"
 
     enableDockerBuild = false
 
