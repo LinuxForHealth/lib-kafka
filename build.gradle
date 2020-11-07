@@ -26,14 +26,12 @@ buildscript {
             }
         }
 	}
-    dependencies {
-        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.8"
-        classpath 'ru.vyarus:gradle-use-python-plugin:1.2.0'
-    }
 }
 
-apply plugin: 'ru.vyarus.use-python'
-apply plugin: 'org.sonarqube'
+plugins {
+    id "ru.vyarus.use-python" version "2.2.0"
+    id "org.sonarqube" version "3.0"
+}
 
 group = 'com.ibm.watson.health.imaging'
 version = "3.1.0"
@@ -57,7 +55,7 @@ python {
     pip 'whi_caf_lib_configreader:3.1.0'
     //Python dependencies end
 
-    envPath = 'build/venv'
+    envPath = '/opt/ibm/whi/app'
 }
 
 
