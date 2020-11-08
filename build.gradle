@@ -50,7 +50,7 @@ sonarqube {
 //Whi CAF Python Build Section
 python {
     //Python dependencies start
-    pip 'confluent-kafka:1.2.0'
+    pip 'confluent-kafka:1.5.0'
     pip 'whi-caf-lib-python-logger:3.1.0'
     pip 'whi_caf_lib_configreader:3.1.0'
     //Python dependencies end
