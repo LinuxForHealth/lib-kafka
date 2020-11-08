@@ -35,6 +35,8 @@ whiBuild {
         return "${this.env.WORKSPACE}/src/main/py"
     }
 
+    enablePublishArtifact = true
+    enablePublishWheel = true
 
     enableWickedScan = true
     wickedScanDir = 'src/main/py'
@@ -42,24 +44,6 @@ whiBuild {
 
     enableCopyCheck = true
     copyCheckFailOnError = false
-
-    postBuild = { config ->
-        println "Publishing wheel"
-        withCredentials([usernamePassword(credentialsId: "${config.mavenRepoCredentialId}", passwordVariable: "PASSWORD", usernameVariable: "USERNAME")]) {
-            if(config.isStandardBranch) {
-                script{
-                    refreshOpt = config.gradleNoDependencyRefresh ? "" : "--refresh-dependencies"
-                    buildUtilImage = this.docker.image("${config.buildUtilImageRepo}/${config.buildUtilImage}")
-                    buildUtilImage.pull()
-                    buildUtilImage.inside {
-                        sh "fix-repo-credentials.sh"
-                        sh "gradle --info $refreshOpt uploadArchives"
-                        sh "delete-repo-credentials.sh"
-                    }
-                }
-            }
-        }
-    }
 
     slackNotifyChannel = "#whi-caf-builds"
     slackNotifySuccess = true
