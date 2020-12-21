@@ -83,8 +83,13 @@ class KafkaConsumer:
             for msg in msgs:
                 if msg.error():
                     logger.error(logging_codes.WHI_CAF_KAFKA_CONSUMER_ERROR, msg.error())
-
-                message = combine_segments(msg.value(), self._generate_header_dictionary(msg.headers()))
+                    continue
+                
+                headers = msg.headers()
+                if headers is None:
+                    message = msg.value()
+                else:
+                    message = combine_segments(msg.value(), self._generate_header_dictionary(msg.headers()))
 
                 if not self.auto_commit_enabled:
                     logger.info(logging_codes.WHI_CAF_KAFKA_COMMITTING_MESSAGE)
