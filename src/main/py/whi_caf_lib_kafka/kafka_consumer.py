@@ -25,7 +25,7 @@ logger = caflogger.get_logger('whi-caf-lib-kafka')
 
 
 _DEFAULT_CONCURRENT_LISTENERS = 4
-_DEFAULT_MONITOR_FREQUENCY = 3
+_DEFAULT_MONITOR_FREQUENCY = 60  # This is the monitoring frequency in secs on the number of listener tasks active
 
 
 class KafkaConsumer:
