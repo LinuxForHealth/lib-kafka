@@ -202,7 +202,16 @@ class TestKafkaProducer(asynctest.TestCase):
         queue.put(msg)
         queue.put(msg)
         queue.put(msg)
-        
+
+    def test_pause(self):
+        consumer = kafka_consumer.KafkaConsumer(['some topic'])
+        self.assertFalse(consumer.paused)
+
+        consumer.pause()
+        self.assertTrue(consumer.paused)
+
+        consumer.unpause()
+        self.assertFalse(consumer.paused)
 
 if __name__ == '__main__':
     asynctest.main()

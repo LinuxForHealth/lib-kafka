@@ -40,6 +40,7 @@ class KafkaConsumer:
         self.tasks = None
         self.done = False
         self.monitor_task = None
+        self.paused = False
 
     def _get_running_loop(self):
         try:
@@ -69,9 +70,18 @@ class KafkaConsumer:
                             self.tasks.remove(task)
                             self.tasks.append(create_task(self._listening_task(callback)))
 
+    def pause(self):
+        self.paused = True
+
+    def unpause(self):
+        self.paused = False
+
     async def _task_monitor(self, tasks):
         while not self.done:
-            logger.info(logging_codes.WHI_CAF_KAFKA_MONITOR_LOG, len(self.tasks))
+            if self.paused:
+                logger.info(logging_codes.WHI_CAF_KAFKA_MONITOR_IS_PAUSED)
+            else:
+                logger.info(logging_codes.WHI_CAF_KAFKA_MONITOR_LOG, len(self.tasks))
             await sleep(self.monitor_ferquency)
 
     async def _listening_task(self, callback):
@@ -79,6 +89,9 @@ class KafkaConsumer:
         self.consumer.subscribe(self.topics)
         loop = self._get_running_loop()
         while True:
+            if self.paused:
+                await sleep(5)
+                continue
             msgs = await loop.run_in_executor(None, self.consumer.consume, 1)
             for msg in msgs:
                 if msg.error():
