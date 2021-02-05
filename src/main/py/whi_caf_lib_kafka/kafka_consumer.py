@@ -90,7 +90,7 @@ class KafkaConsumer:
         loop = self._get_running_loop()
         while True:
             if self.paused:
-                await sleep(5)
+                await sleep(12)
                 continue
             msgs = await loop.run_in_executor(None, self.consumer.consume, 1)
             for msg in msgs:
