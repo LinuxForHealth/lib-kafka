@@ -1,5 +1,5 @@
 /*******************************************************************************
-* IBM Watson Imaging Common Application Framework 3.1                         *
+* IBM Watson Imaging Common Application Framework 3.2                         *
 *                                                                             *
 * IBM Confidential                                                            *
 *                                                                             *
@@ -16,7 +16,7 @@ whiBuild {
     buildType = "DEFAULT"
 
     imageName = "whi-caf-lib-kafka"
-    imageVersion = "3.1.0"
+    imageVersion = "3.2.0"
 
     buildUtilImageRepo = "wh-imaging-dev-docker-local.artifactory.swg-devops.com"
     buildUtilImage = "ubi8/whi-image-ubi8-advisor-p38-builder:latest"
