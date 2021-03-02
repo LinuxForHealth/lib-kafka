@@ -1,5 +1,5 @@
 /*******************************************************************************
-* IBM Watson Imaging Common Application Framework 3.1                         *
+* IBM Watson Imaging Common Application Framework 3.2                         *
 *                                                                             *
 * IBM Confidential                                                            *
 *                                                                             *
@@ -34,7 +34,7 @@ plugins {
 }
 
 group = 'com.ibm.watson.health.imaging'
-version = "3.1.0"
+version = "3.2.0"
 description = """CAF lib kafka"""
 
 sonarqube {
@@ -51,8 +51,8 @@ sonarqube {
 python {
     //Python dependencies start
     pip 'confluent-kafka:1.5.0'
-    pip 'whi-caf-lib-python-logger:3.1.0'
-    pip 'whi_caf_lib_configreader:3.1.0'
+    pip 'whi-caf-lib-python-logger:3.2.0'
+    pip 'whi_caf_lib_configreader:3.2.0'
     //Python dependencies end
 
     envPath = '/opt/ibm/whi/app'
