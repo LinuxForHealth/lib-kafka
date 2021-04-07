@@ -1,16 +1,16 @@
 # *******************************************************************************
-# IBM Watson Imaging Common Application Framework 3.0                         *
-#                                                                             *
-# IBM Confidential                                                            *
-#                                                                             *
-# OCO Source Materials                                                        *
-#                                                                             *
-# (C) Copyright IBM Corp. 2019                                                *
-#                                                                             *
-# The source code for this program is not published or otherwise              *
-# divested of its trade secrets, irrespective of what has been                *
-# deposited with the U.S. Copyright Office.                                   *
-# ******************************************************************************/
+# IBM Watson Imaging Common Application Framework 3.2                           *
+#                                                                               *
+# IBM Confidential                                                              *
+#                                                                               *
+# OCO Source Materials                                                          *
+#                                                                               *
+# Copyright IBM Corporation 2019 - 2021                                         *
+#                                                                               *
+# The source code for this program is not published or otherwise                *
+# divested of its trade secrets, irrespective of what has been                  *
+# deposited with the U.S. Copyright Office.                                     *
+# *******************************************************************************
 
 from unittest import mock
 from unittest.mock import MagicMock, patch, Mock
@@ -47,9 +47,12 @@ class TestKafkaProducer(asynctest.TestCase):
             return [msg]
 
         result = None
-        async def my_callback(msg):
-            nonlocal result
+        headers_dict = None
+
+        async def my_callback(msg, headers):
+            nonlocal result, headers_dict
             result = msg
+            headers_dict = headers
 
         broker_config = {
             'bootstrap.servers': 'localhost:9092',
@@ -82,9 +85,12 @@ class TestKafkaProducer(asynctest.TestCase):
             return [msg]
 
         result = None
-        async def my_callback(msg):
-            nonlocal result
+        headers_dict = None
+
+        async def my_callback(msg, headers):
+            nonlocal result, headers_dict
             result = msg
+            headers_dict = headers
 
         broker_config = {
             'bootstrap.servers': 'localhost:9092',
@@ -121,9 +127,12 @@ class TestKafkaProducer(asynctest.TestCase):
             return [msg]
 
         result = None
-        async def my_callback(msg):
-            nonlocal result
+        headers_dict = None
+
+        async def my_callback(msg, headers):
+            nonlocal result, headers_dict
             result = msg
+            headers_dict = headers
 
         broker_config = {
             'bootstrap.servers': 'localhost:9092',
@@ -172,9 +181,12 @@ class TestKafkaProducer(asynctest.TestCase):
             return [msg]
 
         result = None
-        async def my_callback(msg):
-            nonlocal result
+        headers_dict = None
+
+        async def my_callback(msg, headers):
+            nonlocal result, headers_dict
             result = msg
+            headers_dict = headers
 
         broker_config = {
             'bootstrap.servers': 'localhost:9092',
