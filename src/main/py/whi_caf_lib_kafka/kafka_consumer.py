@@ -1,11 +1,11 @@
 # *******************************************************************************
-# IBM Watson Imaging Common Application Framework 3.1                           *
+# IBM Watson Imaging Common Application Framework 3.2                           *
 #                                                                               *
 # IBM Confidential                                                              *
 #                                                                               *
 # OCO Source Materials                                                          *
 #                                                                               *
-# Copyright IBM Corporation 2019, 2020                                          *
+# Copyright IBM Corporation 2019 - 2021                                         *
 #                                                                               *
 # The source code for this program is not published or otherwise                *
 # divested of its trade secrets, irrespective of what has been                  *
@@ -102,14 +102,15 @@ class KafkaConsumer:
                 if headers is None:
                     message = msg.value()
                 else:
-                    message = combine_segments(msg.value(), self._generate_header_dictionary(msg.headers()))
+                    headers = self._generate_header_dictionary(msg.headers())
+                    message = combine_segments(msg.value(), headers)
 
                 if not self.auto_commit_enabled:
                     logger.info(logging_codes.WHI_CAF_KAFKA_COMMITTING_MESSAGE)
                     self.consumer.commit(msg)
 
                 if message is not None:
-                    await callback(message)
+                    await callback(message, headers)
 
     def _generate_header_dictionary(self, headers):
         headers_dict = {}
