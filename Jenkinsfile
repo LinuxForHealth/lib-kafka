@@ -15,39 +15,40 @@
 whiBuild {
     buildType = "DEFAULT"
 
-    imageName = "whi-caf-lib-kafka"
-    imageVersion = "3.2.0"
+    imageName = "whpa-lib-kafka"
+    imageVersion = "1.0.0"
 
-    buildUtilImageRepo = "wh-imaging-dev-docker-local.artifactory.swg-devops.com"
-    buildUtilImage = "ubi8/whi-image-ubi8-advisor-p38-builder:latest"
+    buildUtilImageRepo = "wh-imaging-cdp-docker-local.artifactory.swg-devops.com"
+    buildUtilImage = "ubi8/whpa-cdp-ubi8-builder-python-39x:latest"
 
     enableDockerBuild = false
 
     enableGradleBuild = true
-    gradleExtraParams = "coverage"
+    enableHardenedBuild = true
+    gradleExtraParams = 'coverage'
 
     enableSonarQube = true
     waitForSonarQubeQualityGate = false
 
     enableAppScan = true
-    appScanAppId = "d17068aa-19d5-430e-bd4d-76637a0b4f0b"
+    appScanAppId = '7b04262e-2443-40d5-8851-ab5e90eabce8'
     appScanTarget = { config ->
-        return "${this.env.WORKSPACE}/src/main/py"
+        return "${this.env.WORKSPACE}/src/"
     }
 
     enablePublishArtifact = true
     enablePublishWheel = true
 
     enableWickedScan = true
-    wickedScanDir = 'src/main/py'
+    wickedScanDir = '.'
     wickedFailOnError = false
 
-    enableCopyCheck = true
-    copyCheckFailOnError = false
+    // enableCopyCheck = true
+    // copyCheckFailOnError = false
 
-    slackNotifyChannel = "#whi-caf-builds"
+    slackNotifyChannel = '#whpa-cdp-builds'
     slackNotifySuccess = true
     slackNotifyPR = true
     slackNotifyPRSuccess = true
-    slackNotifyAtChannelOnError = false
+    slackNotifyAtChannelOnError = true
 }

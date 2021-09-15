@@ -33,9 +33,9 @@ plugins {
     id "org.sonarqube" version "3.0"
 }
 
-group = 'com.ibm.watson.health.imaging'
-version = "3.2.0"
-description = """CAF lib kafka"""
+group = 'com.ibm.watson.health.cdp'
+version = "1.0.0"
+description = """lib kafka"""
 
 sonarqube {
     properties {
@@ -49,19 +49,22 @@ sonarqube {
 // --------
 //Whi CAF Python Build Section
 python {
+    // pythonBinary = 'python3' //local development
+    extraIndexUrls = ["https://${taasArtifactoryUsername}:${taasArtifactoryPassword}@na.artifactory.swg-devops.com/artifactory/api/pypi/wh-imaging-pypi-virtual/simple"]
+    trustedHosts "https://na.artifactory.swg-devops.com"
     //Python dependencies start
     pip 'confluent-kafka:1.5.0'
-    pip 'whi-caf-lib-python-logger:3.2.0'
-    pip 'whi_caf_lib_configreader:3.2.0'
+    pip 'whpa-lib-python-logger:1.0.0'
+    pip 'whpa-lib-configreader:1.0.0'
     //Python dependencies end
 
-    envPath = '/opt/ibm/whi/app'
+    envPath = 'build/venv'
 }
 
 
 task whiCafPySetupBuild(type: PythonTask) {
     module = 'pip'
-    extraArgs = ['install', 'pytest==4.6.3', 'pytest-cov==2.7.1', 'twine==1.14.0', 'flake8==3.7.8', 'asynctest==0.13.0']
+    extraArgs = ['install', 'pytest==6.2.4', 'pytest-cov==2.7.1', 'twine==1.14.0', 'flake8==3.7.8', 'asynctest==0.13.0']
 }
 
 task whiCafPyGenerateReqs {
