@@ -11,17 +11,29 @@
 # divested of its trade secrets, irrespective of what has been                *
 # deposited with the U.S. Copyright Office.                                   *
 # ******************************************************************************/
-
+import importlib
+import os
 from unittest import mock
 from unittest.mock import MagicMock, patch, Mock
-from whi_caf_lib_kafka import kafka_producer
+from whpa_lib_kafka import kafka_producer
 import asynctest
+
+
+def get_sample_config_path(file_name):
+    package_directory = os.path.dirname(os.path.abspath(__file__))
+    root_path = "/../../../../sample_config"
+    return os.path.join(package_directory + root_path, file_name)
 
 
 class TestKafkaProducer(asynctest.TestCase):
 
+    async def setUp(self) -> None:
+        os.environ["WHPA_KAFKA_BROKER_CONFIG_FILE"] = get_sample_config_path('kafka.env')
+        importlib.reload(kafka_producer.configurations)
+
     async def test_send_message(self):
         callback_function = None
+
         def set_callback_function(topic_to_send, msg, key, callback, headers):
             nonlocal callback_function
             callback_function = callback

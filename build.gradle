@@ -46,28 +46,26 @@ sonarqube {
     }
 }
 
-// --------
-//Whi CAF Python Build Section
 python {
     // pythonBinary = 'python3' //local development
     extraIndexUrls = ["https://${taasArtifactoryUsername}:${taasArtifactoryPassword}@na.artifactory.swg-devops.com/artifactory/api/pypi/wh-imaging-pypi-virtual/simple"]
     trustedHosts "https://na.artifactory.swg-devops.com"
     //Python dependencies start
     pip 'confluent-kafka:1.5.0'
-    pip 'whpa-lib-python-logger:1.0.0'
-    pip 'whpa-lib-configreader:1.0.0'
+    pip 'pydantic:1.8.2'
+    pip 'python-dotenv:0.19.0'
     //Python dependencies end
 
     envPath = 'build/venv'
 }
 
 
-task whiCafPySetupBuild(type: PythonTask) {
+task whpaPySetupBuild(type: PythonTask) {
     module = 'pip'
     extraArgs = ['install', 'pytest==6.2.4', 'pytest-cov==2.7.1', 'twine==1.14.0', 'flake8==3.7.8', 'asynctest==0.13.0']
 }
 
-task whiCafPyGenerateReqs {
+task whpaPyGenerateReqs {
     doLast {
         def newFile = new File("${project.projectDir}/pinned.txt")
         newFile.delete()
@@ -78,7 +76,7 @@ task whiCafPyGenerateReqs {
     }
 }
 
-task whiCafPySetupBuildProperties {
+task whpaPySetupBuildProperties {
     doLast {
         def newFile = new File("${project.projectDir}/setup.properties")
         newFile.delete()
@@ -90,27 +88,27 @@ task whiCafPySetupBuildProperties {
     }
 }
 
-task whiCafPyBuildWheel(type: PythonTask) {
+task whpaPyBuildWheel(type: PythonTask) {
     command = 'setup.py'
     extraArgs = ['bdist_wheel', '-d', pyDistDir, '-k']
 }
 
-task whiCafPyTestPrep(type: PythonTask) {
+task whpaPyTestPrep(type: PythonTask) {
     command = 'setup.py'
     extraArgs = ['develop']
 }
 
-task whiCafPyTest(type: PythonTask) {
+task whpaPyTest(type: PythonTask) {
     module = 'pytest'
     extraArgs = [pyTestDir, '--junitxml='+pyTestReportPath, '-v']
 }
 
-task whiCafPyCoverage(type: PythonTask) {
+task whpaPyCoverage(type: PythonTask) {
     module = 'pytest'
     extraArgs = [pyTestDir, '--cov', pySrcDir, '--cov-report=xml:'+pyXmlCoveragePath, '--cov-report=html:'+pyHtmlCoveragePath, '--cov-report=term']
 }
 
-task whiCafClean {
+task whpaClean {
     doLast {
         exec {
             commandLine 'rm', '-rf', 'build'
@@ -118,7 +116,7 @@ task whiCafClean {
     }
 }
 
-task whiCafPyPublishArtifacts(type: PythonTask) {
+task whpaPyPublishArtifacts(type: PythonTask) {
     doFirst {
         def taasArtifactoryUsername = "${taasArtifactoryUsername}"
         def taasArtifactoryPassword = "${taasArtifactoryPassword}"
@@ -127,7 +125,7 @@ task whiCafPyPublishArtifacts(type: PythonTask) {
     }
 }
 
-task whiCafPyFlake8(type: PythonTask) {
+task whpaPyFlake8(type: PythonTask) {
     module = 'flake8'
     extraArgs = [pySrcDir]
 }
@@ -139,24 +137,24 @@ task uploadArchives {}
 task flake8 {}
 task clean {}
 
-project.tasks.whiCafPyTest.dependsOn project.tasks.whiCafPySetupBuild
-project.tasks.whiCafPyTest.dependsOn project.tasks.whiCafPyTestPrep
-project.tasks.whiCafPyTestPrep.dependsOn project.tasks.whiCafPySetupBuildProperties
-project.tasks.whiCafPyCoverage.dependsOn project.tasks.whiCafPySetupBuild
-project.tasks.whiCafPyCoverage.dependsOn project.tasks.whiCafPyTestPrep
-project.tasks.whiCafPyPublishArtifacts.dependsOn project.tasks.whiCafPySetupBuild
-project.tasks.whiCafPyFlake8.dependsOn project.tasks.whiCafPySetupBuild
+project.tasks.whpaPyTest.dependsOn project.tasks.whpaPySetupBuild
+project.tasks.whpaPyTest.dependsOn project.tasks.whpaPyTestPrep
+project.tasks.whpaPyTestPrep.dependsOn project.tasks.whpaPySetupBuildProperties
+project.tasks.whpaPyCoverage.dependsOn project.tasks.whpaPySetupBuild
+project.tasks.whpaPyCoverage.dependsOn project.tasks.whpaPyTestPrep
+project.tasks.whpaPyPublishArtifacts.dependsOn project.tasks.whpaPySetupBuild
+project.tasks.whpaPyFlake8.dependsOn project.tasks.whpaPySetupBuild
 
-project.tasks.build.dependsOn project.tasks.whiCafPySetupBuild
-project.tasks.build.dependsOn project.tasks.whiCafPySetupBuildProperties
-project.tasks.build.dependsOn project.tasks.whiCafPyGenerateReqs
-project.tasks.build.dependsOn project.tasks.whiCafPyTest
-project.tasks.build.finalizedBy project.tasks.whiCafPyBuildWheel
+project.tasks.build.dependsOn project.tasks.whpaPySetupBuild
+project.tasks.build.dependsOn project.tasks.whpaPySetupBuildProperties
+project.tasks.build.dependsOn project.tasks.whpaPyGenerateReqs
+project.tasks.build.dependsOn project.tasks.whpaPyTest
+project.tasks.build.finalizedBy project.tasks.whpaPyBuildWheel
 
-project.tasks.test.finalizedBy project.tasks.whiCafPyTest
-project.tasks.coverage.finalizedBy project.tasks.whiCafPyCoverage
-project.tasks.clean.finalizedBy project.tasks.whiCafClean
-project.tasks.uploadArchives.finalizedBy project.tasks.whiCafPyPublishArtifacts
-project.tasks.flake8.finalizedBy project.tasks.whiCafPyFlake8
+project.tasks.test.finalizedBy project.tasks.whpaPyTest
+project.tasks.coverage.finalizedBy project.tasks.whpaPyCoverage
+project.tasks.clean.finalizedBy project.tasks.whpaClean
+project.tasks.uploadArchives.finalizedBy project.tasks.whpaPyPublishArtifacts
+project.tasks.flake8.finalizedBy project.tasks.whpaPyFlake8
 
 // -----------

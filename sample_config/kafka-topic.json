@@ -1,0 +1,19 @@
+[
+  {
+    "name": "test_topic_1",
+    "replication_factor": 1,
+    "partitions": 1,
+    "operation": "CREATE"
+  },
+  {
+    "name": "test_topic_1",
+    "replication_factor": 1,
+    "partitions": 1,
+    "recreate_topic": true,
+    "operation": "UPDATE"
+  },
+  {
+    "name": "test_topic_2",
+    "operation": "DELETE"
+  }
+]

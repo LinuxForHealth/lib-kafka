@@ -1,5 +1,5 @@
 from unittest import mock
-from whi_caf_lib_kafka import message_segmenter
+from whpa_lib_kafka import message_segmenter
 import unittest
 import uuid
 import time
