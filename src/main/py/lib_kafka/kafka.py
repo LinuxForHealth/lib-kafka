@@ -1,30 +1,17 @@
-# *******************************************************************************
-# IBM Watson Imaging Common Application Framework 3.0                         *
-#                                                                             *
-# IBM Confidential                                                            *
-#                                                                             *
-# OCO Source Materials                                                        *
-#                                                                             *
-# (C) Copyright IBM Corp. 2019                                                *
-#                                                                             *
-# The source code for this program is not published or otherwise              *
-# divested of its trade secrets, irrespective of what has been                *
-# deposited with the U.S. Copyright Office.                                   *
-# ******************************************************************************/
 import os
 import sys
 from time import sleep
 
 from confluent_kafka import KafkaError
 from confluent_kafka.admin import AdminClient, NewTopic, NewPartitions, KafkaException
-from whpa_lib_kafka import logging_codes, logger_util
-import whpa_lib_kafka.config as configurations
+from . import logging_codes, logger_util, config as configurations
+
 
 logger = logger_util.get_logger(__name__)
 
 broker_config = configurations.KafkaSettings().dict(by_alias=True)
 client = AdminClient(broker_config)
-topics = configurations.KafkaTopics.parse_file(os.getenv('WHPA_KAFKA_TOPIC_CONFIG_FILE',
+topics = configurations.KafkaTopics.parse_file(os.getenv('KAFKA_TOPIC_CONFIG_FILE',
                                                          default='/var/app/config/kafka-topic.json'))
 create_topic_list = [t for t in topics.dict()['__root__']
                      if t[configurations.TOPIC_OPERATION_KEY] == configurations.OperationEnum.create]

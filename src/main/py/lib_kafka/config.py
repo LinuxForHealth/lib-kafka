@@ -1,9 +1,9 @@
 import os
 from typing import List, Optional
 from enum import Enum
-from pydantic import BaseSettings, BaseModel, ValidationError, Field, validator
+from pydantic import BaseSettings, BaseModel, Field, validator
 
-from whpa_lib_kafka import logging_codes, logger_util
+from . import logger_util
 
 TOPIC_OPERATION_KEY = 'operation'
 logger = logger_util.get_logger(__name__)
@@ -53,5 +53,5 @@ class KafkaSettings(BaseSettings):
     enable_auto_commit: bool = Field(alias='enable.auto.commit', default=False)
 
     class Config:
-        env_file: str = os.getenv('WHPA_KAFKA_BROKER_CONFIG_FILE', default='/var/app/config/kafka.env')
+        env_file: str = os.getenv('KAFKA_BROKER_CONFIG_FILE', default='/var/app/config/kafka.env')
         allow_population_by_field_name = True

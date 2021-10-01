@@ -1,28 +1,13 @@
-# *******************************************************************************
-# IBM Watson Imaging Common Application Framework 3.1                           *
-#                                                                               *
-# IBM Confidential                                                              *
-#                                                                               *
-# OCO Source Materials                                                          *
-#                                                                               *
-# Copyright IBM Corporation 2019, 2020                                          *
-#                                                                               *
-# The source code for this program is not published or otherwise                *
-# divested of its trade secrets, irrespective of what has been                  *
-# deposited with the U.S. Copyright Office.                                     *
-# *******************************************************************************
-
 from asyncio import get_running_loop, gather
 from confluent_kafka import Producer
 
-from whpa_lib_kafka import logging_codes, logger_util
-from whpa_lib_kafka.message_segmenter import segment_message, ID, COUNT, INDEX
-import whpa_lib_kafka.config as configurations
+from . import logging_codes, logger_util, config as configurations
+from .message_segmenter import segment_message, ID, COUNT, INDEX
+
 
 logger = logger_util.get_logger(__name__)
 
 _DEFAULT_SEGMENT_SIZE = 900 * 1024
-
 
 class KafkaProducer:
     def __init__(self, topic, segment_size=None):

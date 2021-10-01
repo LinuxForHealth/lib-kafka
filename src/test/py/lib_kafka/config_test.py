@@ -1,21 +1,7 @@
-# *******************************************************************************
-# IBM Watson Imaging Common Application Framework 3.0                         *
-#                                                                             *
-# IBM Confidential                                                            *
-#                                                                             *
-# OCO Source Materials                                                        *
-#                                                                             *
-# (C) Copyright IBM Corp. 2019                                                *
-#                                                                             *
-# The source code for this program is not published or otherwise              *
-# divested of its trade secrets, irrespective of what has been                *
-# deposited with the U.S. Copyright Office.                                   *
-# ******************************************************************************/
-
 import os
 import pytest
 from pydantic import ValidationError
-from whpa_lib_kafka import config as configuration
+from lib_kafka import config as configuration
 import importlib
 
 
@@ -25,7 +11,7 @@ def reset():
 
 
 def reset_env_vars():
-    for env_var in ("WHPA_KAFKA_BROKER_CONFIG_FILE", "WHPA_KAFKA_TOPIC_CONFIG_FILE"):
+    for env_var in ("KAFKA_BROKER_CONFIG_FILE", "KAFKA_TOPIC_CONFIG_FILE"):
         if env_var in os.environ:
             del os.environ[env_var]
 
@@ -49,7 +35,7 @@ def test_kafka_settings_success_object():
 
 
 def test_kafka_settings_success_env_file():
-    os.environ["WHPA_KAFKA_BROKER_CONFIG_FILE"] = get_sample_config_path('kafka.env')
+    os.environ["KAFKA_BROKER_CONFIG_FILE"] = get_sample_config_path('kafka.env')
     importlib.reload(configuration)
     settings = configuration.KafkaSettings()
     assert settings is not None

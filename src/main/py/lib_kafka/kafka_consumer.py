@@ -1,23 +1,9 @@
-# *******************************************************************************
-# IBM Watson Imaging Common Application Framework 3.2                           *
-#                                                                               *
-# IBM Confidential                                                              *
-#                                                                               *
-# OCO Source Materials                                                          *
-#                                                                               *
-# Copyright IBM Corporation 2019 - 2021                                         *
-#                                                                               *
-# The source code for this program is not published or otherwise                *
-# divested of its trade secrets, irrespective of what has been                  *
-# deposited with the U.S. Copyright Office.                                     *
-# *******************************************************************************
 import os
 from asyncio import create_task, gather, sleep, get_running_loop
 from confluent_kafka import Consumer
 
-from whpa_lib_kafka import logging_codes, logger_util
-import whpa_lib_kafka.config as configurations
-from whpa_lib_kafka.message_segmenter import combine_segments
+from . import logging_codes, logger_util, config as configurations
+from .message_segmenter import combine_segments
 
 logger = logger_util.get_logger(__name__)
 

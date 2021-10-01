@@ -1,21 +1,8 @@
-# *******************************************************************************
-# IBM Watson Imaging Common Application Framework 3.0                         *
-#                                                                             *
-# IBM Confidential                                                            *
-#                                                                             *
-# OCO Source Materials                                                        *
-#                                                                             *
-# (C) Copyright IBM Corp. 2019                                                *
-#                                                                             *
-# The source code for this program is not published or otherwise              *
-# divested of its trade secrets, irrespective of what has been                *
-# deposited with the U.S. Copyright Office.                                   *
-# ******************************************************************************/
 import importlib
 import os
 from unittest import mock
 from unittest.mock import MagicMock, patch, Mock
-from whpa_lib_kafka import kafka_producer
+from lib_kafka import kafka_producer
 import asynctest
 
 
@@ -28,7 +15,7 @@ def get_sample_config_path(file_name):
 class TestKafkaProducer(asynctest.TestCase):
 
     async def setUp(self) -> None:
-        os.environ["WHPA_KAFKA_BROKER_CONFIG_FILE"] = get_sample_config_path('kafka.env')
+        os.environ["KAFKA_BROKER_CONFIG_FILE"] = get_sample_config_path('kafka.env')
         importlib.reload(kafka_producer.configurations)
 
     async def test_send_message(self):

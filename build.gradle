@@ -1,17 +1,3 @@
-/*******************************************************************************
-* IBM Watson Imaging Common Application Framework 3.2                         *
-*                                                                             *
-* IBM Confidential                                                            *
-*                                                                             *
-* OCO Source Materials                                                        *
-*                                                                             *
-*  Copyright IBM Corporation 2019, 2020                                       *
-*                                                                             *
-* The source code for this program is not published or otherwise              *
-* divested of its trade secrets, irrespective of what has been                *
-* deposited with the U.S. Copyright Office.                                   *
-*******************************************************************************/
-
 buildscript {
     repositories {
 		maven {
@@ -47,11 +33,8 @@ sonarqube {
 }
 
 python {
-    // pythonBinary = 'python3' //local development
-    extraIndexUrls = ["https://${taasArtifactoryUsername}:${taasArtifactoryPassword}@na.artifactory.swg-devops.com/artifactory/api/pypi/wh-imaging-pypi-virtual/simple"]
-    trustedHosts "https://na.artifactory.swg-devops.com"
     //Python dependencies start
-    pip 'confluent-kafka:1.5.0'
+    pip 'confluent-kafka:1.7.0'
     pip 'pydantic:1.8.2'
     pip 'python-dotenv:0.19.0'
     //Python dependencies end
@@ -60,12 +43,12 @@ python {
 }
 
 
-task whpaPySetupBuild(type: PythonTask) {
+task PySetupBuild(type: PythonTask) {
     module = 'pip'
-    extraArgs = ['install', 'pytest==6.2.4', 'pytest-cov==2.7.1', 'twine==1.14.0', 'flake8==3.7.8', 'asynctest==0.13.0']
+    extraArgs = ['install', 'pytest==6.2.4', 'pytest-cov==2.7.1', 'twine==1.14.0', 'flake8==3.7.8', 'asynctest==0.13.0', 'wheel==0.37.0']
 }
 
-task whpaPyGenerateReqs {
+task PyGenerateReqs {
     doLast {
         def newFile = new File("${project.projectDir}/pinned.txt")
         newFile.delete()
@@ -76,7 +59,7 @@ task whpaPyGenerateReqs {
     }
 }
 
-task whpaPySetupBuildProperties {
+task PySetupBuildProperties {
     doLast {
         def newFile = new File("${project.projectDir}/setup.properties")
         newFile.delete()
@@ -88,27 +71,27 @@ task whpaPySetupBuildProperties {
     }
 }
 
-task whpaPyBuildWheel(type: PythonTask) {
+task PyBuildWheel(type: PythonTask) {
     command = 'setup.py'
     extraArgs = ['bdist_wheel', '-d', pyDistDir, '-k']
 }
 
-task whpaPyTestPrep(type: PythonTask) {
+task PyTestPrep(type: PythonTask) {
     command = 'setup.py'
     extraArgs = ['develop']
 }
 
-task whpaPyTest(type: PythonTask) {
+task PyTest(type: PythonTask) {
     module = 'pytest'
     extraArgs = [pyTestDir, '--junitxml='+pyTestReportPath, '-v']
 }
 
-task whpaPyCoverage(type: PythonTask) {
+task PyCoverage(type: PythonTask) {
     module = 'pytest'
     extraArgs = [pyTestDir, '--cov', pySrcDir, '--cov-report=xml:'+pyXmlCoveragePath, '--cov-report=html:'+pyHtmlCoveragePath, '--cov-report=term']
 }
 
-task whpaClean {
+task PyClean {
     doLast {
         exec {
             commandLine 'rm', '-rf', 'build'
@@ -116,7 +99,7 @@ task whpaClean {
     }
 }
 
-task whpaPyPublishArtifacts(type: PythonTask) {
+task PyPublishArtifacts(type: PythonTask) {
     doFirst {
         def taasArtifactoryUsername = "${taasArtifactoryUsername}"
         def taasArtifactoryPassword = "${taasArtifactoryPassword}"
@@ -125,7 +108,7 @@ task whpaPyPublishArtifacts(type: PythonTask) {
     }
 }
 
-task whpaPyFlake8(type: PythonTask) {
+task PyFlake8(type: PythonTask) {
     module = 'flake8'
     extraArgs = [pySrcDir]
 }
@@ -137,24 +120,24 @@ task uploadArchives {}
 task flake8 {}
 task clean {}
 
-project.tasks.whpaPyTest.dependsOn project.tasks.whpaPySetupBuild
-project.tasks.whpaPyTest.dependsOn project.tasks.whpaPyTestPrep
-project.tasks.whpaPyTestPrep.dependsOn project.tasks.whpaPySetupBuildProperties
-project.tasks.whpaPyCoverage.dependsOn project.tasks.whpaPySetupBuild
-project.tasks.whpaPyCoverage.dependsOn project.tasks.whpaPyTestPrep
-project.tasks.whpaPyPublishArtifacts.dependsOn project.tasks.whpaPySetupBuild
-project.tasks.whpaPyFlake8.dependsOn project.tasks.whpaPySetupBuild
+project.tasks.PyTest.dependsOn project.tasks.PySetupBuild
+project.tasks.PyTest.dependsOn project.tasks.PyTestPrep
+project.tasks.PyTestPrep.dependsOn project.tasks.PySetupBuildProperties
+project.tasks.PyCoverage.dependsOn project.tasks.PySetupBuild
+project.tasks.PyCoverage.dependsOn project.tasks.PyTestPrep
+project.tasks.PyPublishArtifacts.dependsOn project.tasks.PySetupBuild
+project.tasks.PyFlake8.dependsOn project.tasks.PySetupBuild
 
-project.tasks.build.dependsOn project.tasks.whpaPySetupBuild
-project.tasks.build.dependsOn project.tasks.whpaPySetupBuildProperties
-project.tasks.build.dependsOn project.tasks.whpaPyGenerateReqs
-project.tasks.build.dependsOn project.tasks.whpaPyTest
-project.tasks.build.finalizedBy project.tasks.whpaPyBuildWheel
+project.tasks.build.dependsOn project.tasks.PySetupBuild
+project.tasks.build.dependsOn project.tasks.PySetupBuildProperties
+project.tasks.build.dependsOn project.tasks.PyGenerateReqs
+project.tasks.build.dependsOn project.tasks.PyTest
+project.tasks.build.finalizedBy project.tasks.PyBuildWheel
 
-project.tasks.test.finalizedBy project.tasks.whpaPyTest
-project.tasks.coverage.finalizedBy project.tasks.whpaPyCoverage
-project.tasks.clean.finalizedBy project.tasks.whpaClean
-project.tasks.uploadArchives.finalizedBy project.tasks.whpaPyPublishArtifacts
-project.tasks.flake8.finalizedBy project.tasks.whpaPyFlake8
+project.tasks.test.finalizedBy project.tasks.PyTest
+project.tasks.coverage.finalizedBy project.tasks.PyCoverage
+project.tasks.clean.finalizedBy project.tasks.PyClean
+project.tasks.uploadArchives.finalizedBy project.tasks.PyPublishArtifacts
+project.tasks.flake8.finalizedBy project.tasks.PyFlake8
 
 // -----------

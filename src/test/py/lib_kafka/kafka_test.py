@@ -1,21 +1,8 @@
-# *******************************************************************************
-# IBM Watson Imaging Common Application Framework 3.0                         *
-#                                                                             *
-# IBM Confidential                                                            *
-#                                                                             *
-# OCO Source Materials                                                        *
-#                                                                             *
-# (C) Copyright IBM Corp. 2019                                                *
-#                                                                             *
-# The source code for this program is not published or otherwise              *
-# divested of its trade secrets, irrespective of what has been                *
-# deposited with the U.S. Copyright Office.                                   *
-# ******************************************************************************/
 import importlib
 import os
 from unittest import mock
 from unittest.mock import MagicMock
-from whpa_lib_kafka import logging_codes
+from lib_kafka import logging_codes
 import unittest
 import concurrent.futures
 from confluent_kafka.admin import ClusterMetadata, TopicMetadata, PartitionMetadata
@@ -31,9 +18,9 @@ def get_sample_config_path(file_name):
 class TestKafkaApiMethods(unittest.TestCase):
 
     def setUp(self) -> None:
-        os.environ["WHPA_KAFKA_BROKER_CONFIG_FILE"] = get_sample_config_path('kafka.env')
-        os.environ["WHPA_KAFKA_TOPIC_CONFIG_FILE"] = get_sample_config_path('kafka-topic.json')
-        self.kafka = importlib.import_module('whpa_lib_kafka.kafka')
+        os.environ["KAFKA_BROKER_CONFIG_FILE"] = get_sample_config_path('kafka.env')
+        os.environ["KAFKA_TOPIC_CONFIG_FILE"] = get_sample_config_path('kafka-topic.json')
+        self.kafka = importlib.import_module('lib_kafka.kafka')
 
     @mock.patch("sys.exit")
     @mock.patch("confluent_kafka.admin.AdminClient.create_topics")
@@ -48,7 +35,7 @@ class TestKafkaApiMethods(unittest.TestCase):
         f.set_result(None)
         mock_create_topics.return_value = {'testTopic1': None, 'testTopic2': f}
 
-        with self.assertLogs('whpa_lib_kafka.kafka', level='ERROR') as cm:
+        with self.assertLogs('lib_kafka.kafka', level='ERROR') as cm:
             self.kafka.create_topics()
             self.assertTrue(mock_create_topics.called)
             self.assertEqual(mock_create_topics.call_count, 1)
@@ -61,11 +48,11 @@ class TestKafkaApiMethods(unittest.TestCase):
         f.result = MagicMock(side_effect=KafkaException(kafka_error))
         mock_create_topics.return_value = {'testTopic1': f}
 
-        with self.assertLogs('whpa_lib_kafka.kafka', level='INFO') as cm:
+        with self.assertLogs('lib_kafka.kafka', level='INFO') as cm:
             self.kafka.create_topics()
             self.assertTrue(mock_create_topics.called)
             self.assertEqual(mock_create_topics.call_count, 1)
-            self.assertTrue('INFO:whpa_lib_kafka.kafka:' + logging_codes.TOPIC_EXISTS % 'testTopic1' in cm.output)
+            self.assertTrue('INFO:lib_kafka.kafka:' + logging_codes.TOPIC_EXISTS % 'testTopic1' in cm.output)
 
         mock_create_topics.reset_mock()
         kafka_error = MagicMock()
@@ -73,7 +60,7 @@ class TestKafkaApiMethods(unittest.TestCase):
         f.result = MagicMock(side_effect=KafkaException(kafka_error))
         mock_create_topics.return_value = {'testTopic1': f}
 
-        with self.assertLogs('whpa_lib_kafka.kafka', level='ERROR') as cm:
+        with self.assertLogs('lib_kafka.kafka', level='ERROR') as cm:
             self.kafka.create_topics()
             self.assertTrue(mock_create_topics.called)
             self.assertEqual(mock_create_topics.call_count, 1)
@@ -85,7 +72,7 @@ class TestKafkaApiMethods(unittest.TestCase):
         kafka_error.code.return_value = KafkaError.CLUSTER_AUTHORIZATION_FAILED
         f.result = MagicMock(side_effect=KafkaException(kafka_error))
         mock_create_topics.return_value = {'testTopic1': f}
-        with self.assertLogs('whpa_lib_kafka.kafka', level='ERROR') as cm:
+        with self.assertLogs('lib_kafka.kafka', level='ERROR') as cm:
             self.kafka.create_topics()
             self.assertTrue(mock_create_topics.called)
             self.assertEqual(mock_create_topics.call_count, 1)
@@ -95,7 +82,7 @@ class TestKafkaApiMethods(unittest.TestCase):
         mock_create_topics.reset_mock()
         f.result = MagicMock(side_effect=Exception)
         mock_create_topics.return_value = {'testTopic1': f}
-        with self.assertLogs('whpa_lib_kafka.kafka', level='ERROR') as cm:
+        with self.assertLogs('lib_kafka.kafka', level='ERROR') as cm:
             self.kafka.create_topics()
             self.assertTrue(mock_create_topics.called)
             self.assertEqual(mock_create_topics.call_count, 1)
@@ -113,17 +100,17 @@ class TestKafkaApiMethods(unittest.TestCase):
         f.set_running_or_notify_cancel()
         f.set_result(None)
         mock_delete_topics.return_value = {'testTopic': f}
-        with self.assertLogs('whpa_lib_kafka.kafka', level='INFO') as cm:
+        with self.assertLogs('lib_kafka.kafka', level='INFO') as cm:
             self.kafka.delete_topics()
             self.assertTrue(mock_delete_topics.called)
             self.assertEqual(mock_delete_topics.call_count, 1)
             self.assertTrue(
-                'INFO:whpa_lib_kafka.kafka:' + logging_codes.DELETE_TOPIC_SUCCESS % 'testTopic' in cm.output)
+                'INFO:lib_kafka.kafka:' + logging_codes.DELETE_TOPIC_SUCCESS % 'testTopic' in cm.output)
 
         mock_delete_topics.reset_mock()
         f.result = MagicMock(side_effect=Exception)
         mock_delete_topics.return_value = {'testTopic': f}
-        with self.assertLogs('whpa_lib_kafka.kafka', level='ERROR') as cm:
+        with self.assertLogs('lib_kafka.kafka', level='ERROR') as cm:
             self.kafka.delete_topics()
             self.assertTrue(mock_delete_topics.called)
             self.assertEqual(mock_delete_topics.call_count, 1)
@@ -152,12 +139,12 @@ class TestKafkaApiMethods(unittest.TestCase):
             {'name': 'topic1', 'partitions': 1, 'replication_factors': 1, 'recreate_topic': False}]
         # Same number of partitions as existing
 
-        with self.assertLogs('whpa_lib_kafka.kafka', level='INFO') as cm:
+        with self.assertLogs('lib_kafka.kafka', level='INFO') as cm:
             self.kafka.update_topics()
             self.assertTrue(mock_list_topics.called)
             self.assertEqual(mock_list_topics.call_count, 1)
             self.assertTrue(
-                'INFO:whpa_lib_kafka.kafka:' + logging_codes.PARTITION_NUM_EQUAL % (1, 1, 'topic1') in cm.output)
+                'INFO:lib_kafka.kafka:' + logging_codes.PARTITION_NUM_EQUAL % (1, 1, 'topic1') in cm.output)
 
         mock_list_topics.reset_mock()
         self.kafka.update_topic_list = [
@@ -166,26 +153,26 @@ class TestKafkaApiMethods(unittest.TestCase):
         f.set_running_or_notify_cancel()
         f.set_result(None)
         mock_create_partitions.return_value = {'topic1': f}
-        with self.assertLogs('whpa_lib_kafka.kafka', level='INFO') as cm:
+        with self.assertLogs('lib_kafka.kafka', level='INFO') as cm:
             self.kafka.update_topics()
             self.assertTrue(mock_list_topics.called)
             self.assertEqual(mock_list_topics.call_count, 1)
             self.assertTrue(mock_create_partitions.called)
             self.assertEqual(mock_create_partitions.call_count, 1)
             self.assertTrue(
-                'INFO:whpa_lib_kafka.kafka:' + logging_codes.ADD_PARTITION_SUCCESS % ('topic1', 2) in cm.output)
+                'INFO:lib_kafka.kafka:' + logging_codes.ADD_PARTITION_SUCCESS % ('topic1', 2) in cm.output)
 
         # Increase number of partitions - success
         mock_create_partitions.reset_mock()
         mock_create_partitions.return_value = {'testTopic1': None, 'testTopic2': f}
 
-        with self.assertLogs('whpa_lib_kafka.kafka', level='INFO') as cm:
+        with self.assertLogs('lib_kafka.kafka', level='INFO') as cm:
             self.kafka.update_topics()
             self.assertTrue(
-                'INFO:whpa_lib_kafka.kafka:' + logging_codes.ADD_PARTITION_SUCCESS % ('testTopic2', 2) in cm.output)
+                'INFO:lib_kafka.kafka:' + logging_codes.ADD_PARTITION_SUCCESS % ('testTopic2', 2) in cm.output)
 
             self.assertTrue(
-                any('ERROR:whpa_lib_kafka.kafka:' in s for s in cm.output))
+                any('ERROR:lib_kafka.kafka:' in s for s in cm.output))
 
         # Decrease number of partitions with recreate topic true
         self.kafka.update_topic_list = [
@@ -207,10 +194,10 @@ class TestKafkaApiMethods(unittest.TestCase):
         self.kafka.update_topic_list = [
             {'name': 'topic2', 'partitions': 0, 'replication_factors': 1, 'recreate_topic': False}]
 
-        with self.assertLogs('whpa_lib_kafka.kafka', level='INFO') as cm:
+        with self.assertLogs('lib_kafka.kafka', level='INFO') as cm:
             self.kafka.update_topics()
             self.assertTrue(
-                'INFO:whpa_lib_kafka.kafka:' + logging_codes.TOPIC_NOT_FOUND % 'topic2' in cm.output)
+                'INFO:lib_kafka.kafka:' + logging_codes.TOPIC_NOT_FOUND % 'topic2' in cm.output)
 
     def test_convert_to_bool(self):
         self.assertFalse(self.kafka._convert_to_bool(None))

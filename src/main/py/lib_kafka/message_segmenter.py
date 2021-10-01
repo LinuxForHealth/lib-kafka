@@ -1,7 +1,8 @@
 import uuid
 import math
 import time
-from whpa_lib_kafka import logging_codes, logger_util
+from . import logging_codes, logger_util
+
 
 logger = logger_util.get_logger(__name__)
 
