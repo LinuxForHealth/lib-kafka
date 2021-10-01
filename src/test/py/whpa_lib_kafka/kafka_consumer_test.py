@@ -12,18 +12,19 @@
 # deposited with the U.S. Copyright Office.                                     *
 # *******************************************************************************
 
-from unittest import mock
-from unittest.mock import MagicMock, patch, Mock
-from queue import Queue
-from whi_caf_lib_kafka import kafka_consumer
-from asyncio import get_running_loop, sleep, all_tasks
-import time
+import importlib
+import os
 import uuid
+from asyncio import get_running_loop, sleep
+from queue import Queue
+from unittest.mock import Mock
 
 import asynctest
 
+from whpa_lib_kafka import kafka_consumer
 
-class MessageObject():
+
+class MessageObject:
     def __init__(self, msg, headers, error=None):
         self.msg_msg = msg
         self.error_msg = error
@@ -38,10 +39,22 @@ class MessageObject():
     def value(self):
         return self.msg_msg
 
+
+def get_sample_config_path(file_name):
+    package_directory = os.path.dirname(os.path.abspath(__file__))
+    root_path = "/../../../../sample_config"
+    return os.path.join(package_directory + root_path, file_name)
+
+
 class TestKafkaProducer(asynctest.TestCase):
+
+    async def setUp(self) -> None:
+        os.environ["WHPA_KAFKA_BROKER_CONFIG_FILE"] = get_sample_config_path('kafka.env')
+        importlib.reload(kafka_consumer.configurations)
 
     async def test_kafka_listener(self):
         queue = Queue()
+
         def wait_on_queue(*args):
             msg = queue.get()
             return [msg]
@@ -54,20 +67,16 @@ class TestKafkaProducer(asynctest.TestCase):
             result = msg
             headers_dict = headers
 
-        broker_config = {
-            'bootstrap.servers': 'localhost:9092',
-            'group.id': 'kafka-listener',
-            'enable.auto.commit': 'True'
-        }
-        kafka_consumer.broker_config = broker_config
         consumer = kafka_consumer.KafkaConsumer(['some topic'])
         consumer.consumer = Mock()
         consumer.consumer.consume = Mock()
         consumer.consumer.consume.side_effect = wait_on_queue
 
         get_running_loop().create_task(consumer.start_listening(my_callback))
-        
-        msg = MessageObject(b'test_message', [('fragment.identifier', str(uuid.uuid4).encode('utf-8')), ('fragment.count', b'1'), ('fragment.index',b'1')])
+
+        msg = MessageObject(b'test_message',
+                            [('fragment.identifier', str(uuid.uuid4).encode('utf-8')), ('fragment.count', b'1'),
+                             ('fragment.index', b'1')])
         queue.put(msg)
         await sleep(2)
         self.assertEqual(result, b'test_message')
@@ -80,6 +89,7 @@ class TestKafkaProducer(asynctest.TestCase):
 
     async def test_kafka_listener_multipart_message(self):
         queue = Queue()
+
         def wait_on_queue(*args):
             msg = queue.get()
             return [msg]
@@ -92,24 +102,22 @@ class TestKafkaProducer(asynctest.TestCase):
             result = msg
             headers_dict = headers
 
-        broker_config = {
-            'bootstrap.servers': 'localhost:9092',
-            'group.id': 'kafka-listener',
-            'enable.auto.commit': 'True'
-        }
-        kafka_consumer.broker_config = broker_config
         consumer = kafka_consumer.KafkaConsumer(['some topic'], concurrent_listeners=1)
         consumer.consumer = Mock()
         consumer.consumer.consume = Mock()
         consumer.consumer.consume.side_effect = wait_on_queue
 
         get_running_loop().create_task(consumer.start_listening(my_callback))
-        
+
         msg_id = str(uuid.uuid4).encode('utf-8')
-        msg1 = MessageObject(b'Hello ', [('fragment.identifier', msg_id), ('fragment.count', b'4'), ('fragment.index',b'1')])
-        msg2 = MessageObject(b'World!', [('fragment.identifier', msg_id), ('fragment.count', b'4'), ('fragment.index',b'2')])
-        msg3 = MessageObject(b' How a', [('fragment.identifier', msg_id), ('fragment.count', b'4'), ('fragment.index',b'3')])
-        msg4 = MessageObject(b're you', [('fragment.identifier', msg_id), ('fragment.count', b'4'), ('fragment.index',b'4')])
+        msg1 = MessageObject(b'Hello ',
+                             [('fragment.identifier', msg_id), ('fragment.count', b'4'), ('fragment.index', b'1')])
+        msg2 = MessageObject(b'World!',
+                             [('fragment.identifier', msg_id), ('fragment.count', b'4'), ('fragment.index', b'2')])
+        msg3 = MessageObject(b' How a',
+                             [('fragment.identifier', msg_id), ('fragment.count', b'4'), ('fragment.index', b'3')])
+        msg4 = MessageObject(b're you',
+                             [('fragment.identifier', msg_id), ('fragment.count', b'4'), ('fragment.index', b'4')])
         queue.put(msg3)
         queue.put(msg4)
         queue.put(msg2)
@@ -122,6 +130,7 @@ class TestKafkaProducer(asynctest.TestCase):
 
     async def test_kafka_listener_auto_commit_disabled(self):
         queue = Queue()
+
         def wait_on_queue(*args):
             msg = queue.get()
             return [msg]
@@ -134,12 +143,6 @@ class TestKafkaProducer(asynctest.TestCase):
             result = msg
             headers_dict = headers
 
-        broker_config = {
-            'bootstrap.servers': 'localhost:9092',
-            'group.id': 'kafka-listener',
-            'enable.auto.commit': 'False'
-        }
-        kafka_consumer.broker_config = broker_config
         consumer = kafka_consumer.KafkaConsumer(['some topic'], concurrent_listeners=1)
         consumer.consumer = Mock()
         consumer.consumer.consume = Mock()
@@ -147,23 +150,18 @@ class TestKafkaProducer(asynctest.TestCase):
         consumer.consumer.consume.side_effect = wait_on_queue
 
         get_running_loop().create_task(consumer.start_listening(my_callback))
-        
-        msg = MessageObject(b'test_message', [('fragment.identifier', str(uuid.uuid4()).encode('utf-8')), ('fragment.count', b'1'), ('fragment.index',b'1')])
+
+        msg = MessageObject(b'test_message',
+                            [('fragment.identifier', str(uuid.uuid4()).encode('utf-8')), ('fragment.count', b'1'),
+                             ('fragment.index', b'1')])
         queue.put(msg)
         await sleep(2)
         self.assertEqual(result, b'test_message')
         consumer.consumer.commit.assert_called()
         consumer.close_consumer()
         queue.put(msg)
-        
 
     async def test_kafa_listner_with_none_consumer(self):
-        broker_config = {
-            'bootstrap.servers': 'localhost:9092',
-            'group.id': 'kafka-listener',
-            'enable.auto.commit': 'False'
-        }
-        kafka_consumer.broker_config = broker_config
         consumer = kafka_consumer.KafkaConsumer(['some topic'])
         consumer.consumer = None
         try:
@@ -176,6 +174,7 @@ class TestKafkaProducer(asynctest.TestCase):
 
     async def test_kafka_listener_restart_listener(self):
         queue = Queue()
+
         def wait_on_queue(*args):
             msg = queue.get()
             return [msg]
@@ -188,27 +187,23 @@ class TestKafkaProducer(asynctest.TestCase):
             result = msg
             headers_dict = headers
 
-        broker_config = {
-            'bootstrap.servers': 'localhost:9092',
-            'group.id': 'kafka-listener',
-            'enable.auto.commit': 'False'
-        }
-        kafka_consumer.broker_config = broker_config
         consumer = kafka_consumer.KafkaConsumer(['some topic'])
         consumer.consumer = Mock()
         consumer.consumer.consume = Mock()
         consumer.consumer.consume.side_effect = wait_on_queue
 
         get_running_loop().create_task(consumer.start_listening(my_callback))
-        
+
         await sleep(2)
         self.assertEqual(len(consumer.tasks), 4)
         consumer.tasks[0].cancel()
         await sleep(2)
         self.assertEqual(len(consumer.tasks), 4)
-        
+
         consumer.close_consumer()
-        msg = MessageObject(b'test_message', [('fragment.identifier', str(uuid.uuid4).encode('utf-8')), ('fragment.count', b'1'), ('fragment.index',b'1')])
+        msg = MessageObject(b'test_message',
+                            [('fragment.identifier', str(uuid.uuid4).encode('utf-8')), ('fragment.count', b'1'),
+                             ('fragment.index', b'1')])
         queue.put(msg)
         queue.put(msg)
         queue.put(msg)
@@ -224,6 +219,7 @@ class TestKafkaProducer(asynctest.TestCase):
 
         consumer.unpause()
         self.assertFalse(consumer.paused)
+
 
 if __name__ == '__main__':
     asynctest.main()

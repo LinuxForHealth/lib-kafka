@@ -1,11 +1,9 @@
 import uuid
 import math
 import time
-from whi_caf_lib_kafka import logging_codes
-import caf_logger.logger as caflogger
+from whpa_lib_kafka import logging_codes, logger_util
 
-logger = caflogger.get_logger('whi-caf-lib-kafka')
-
+logger = logger_util.get_logger(__name__)
 
 def segment_message(msg, chunk_size=900*1024):
     if type(msg) == str:
@@ -13,7 +11,7 @@ def segment_message(msg, chunk_size=900*1024):
     elif type(msg) == bytes:
         msg_bytes = msg
     else:
-        logger.error(logging_codes.WHI_CAF_KAFKA_INVALID_MSG_TYPE)
+        logger.error(logging_codes.INVALID_MSG_TYPE)
         raise ValueError('msg can only be of type bytes or string')
     msg_size = len(msg_bytes)
     msg_segment_count = math.ceil(msg_size/chunk_size)
@@ -72,5 +70,5 @@ def _purge_segments():
         last_accessed = _message_store[identifier]['last_accessed']
         current_time = time.time() - _SEGMENTS_PURGE_TIMEOUT
         if last_accessed < current_time:
-            logger.warn(logging_codes.WHI_CAF_KAFKA_LIB_PURGING_MESSAGE_SEGMENTS, identifier)
+            logger.warn(logging_codes.PURGING_MESSAGE_SEGMENTS, identifier)
             del _message_store[identifier]

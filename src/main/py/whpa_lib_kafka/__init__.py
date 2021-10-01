@@ -12,4 +12,4 @@
 # deposited with the U.S. Copyright Office.                                   *
 # ******************************************************************************/
 
-name = "whi-caf-lib-kafka"
+name = "whpa-lib-kafka"
