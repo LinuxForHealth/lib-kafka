@@ -1,8 +1,7 @@
 import uuid
 import math
 import time
-from . import logging_codes, logger_util
-
+from lib_kafka import logger_util, logging_codes
 
 logger = logger_util.get_logger(__name__)
 

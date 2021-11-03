@@ -3,7 +3,7 @@ from typing import List, Optional
 from enum import Enum
 from pydantic import BaseSettings, BaseModel, Field, validator
 
-from . import logger_util
+from lib_kafka import logger_util
 
 TOPIC_OPERATION_KEY = 'operation'
 logger = logger_util.get_logger(__name__)

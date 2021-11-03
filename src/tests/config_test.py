@@ -3,6 +3,7 @@ import pytest
 from pydantic import ValidationError
 from lib_kafka import config as configuration
 import importlib
+from tests import resources_directory
 
 
 @pytest.fixture(autouse=True)
@@ -17,9 +18,7 @@ def reset_env_vars():
 
 
 def get_sample_config_path(file_name):
-    package_directory = os.path.dirname(os.path.abspath(__file__))
-    root_path = "/../../../../sample_config"
-    return os.path.join(package_directory + root_path, file_name)
+    return os.path.join(resources_directory, file_name)
 
 
 def test_kafka_settings_success_object():

@@ -4,6 +4,7 @@ import uuid
 from asyncio import get_running_loop, sleep
 from queue import Queue
 from unittest.mock import Mock
+from tests import resources_directory
 
 import asynctest
 
@@ -27,9 +28,7 @@ class MessageObject:
 
 
 def get_sample_config_path(file_name):
-    package_directory = os.path.dirname(os.path.abspath(__file__))
-    root_path = "/../../../../sample_config"
-    return os.path.join(package_directory + root_path, file_name)
+    return os.path.join(resources_directory, file_name)
 
 
 class TestKafkaProducer(asynctest.TestCase):

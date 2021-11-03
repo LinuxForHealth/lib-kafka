@@ -1,7 +1,7 @@
 from asyncio import get_running_loop, gather
 from confluent_kafka import Producer
 
-from . import logging_codes, logger_util, config as configurations
+from . import config as configurations, logger_util, logging_codes
 from .message_segmenter import segment_message, ID, COUNT, INDEX
 
 

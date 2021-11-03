@@ -1,8 +1,7 @@
-import os
 from asyncio import create_task, gather, sleep, get_running_loop
 from confluent_kafka import Consumer
 
-from . import logging_codes, logger_util, config as configurations
+from . import config as configurations, logger_util, logging_codes
 from .message_segmenter import combine_segments
 
 logger = logger_util.get_logger(__name__)

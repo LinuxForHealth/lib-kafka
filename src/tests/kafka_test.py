@@ -7,12 +7,10 @@ import unittest
 import concurrent.futures
 from confluent_kafka.admin import ClusterMetadata, TopicMetadata, PartitionMetadata
 from confluent_kafka import KafkaError, KafkaException
-
+from tests import resources_directory
 
 def get_sample_config_path(file_name):
-    package_directory = os.path.dirname(os.path.abspath(__file__))
-    root_path = "/../../../../sample_config"
-    return os.path.join(package_directory + root_path, file_name)
+    return os.path.join(resources_directory, file_name)
 
 
 class TestKafkaApiMethods(unittest.TestCase):

@@ -11,9 +11,6 @@ bin/
 target/
 logs/
 scratch/
-/gradle/wrapper
-gradlew
-gradlew.bat
 .project
 .pydevproject
 *.egg-info/
@@ -48,3 +45,4 @@ volumes/nifi/conf/nifi.properties
 
 .python-version
 virtualenv
+venv
