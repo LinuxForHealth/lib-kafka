@@ -1,3 +1,8 @@
+"""
+config.py
+
+Pydantic settings for lib-kafka configurations.
+"""
 import os
 from typing import List, Optional
 from enum import Enum
@@ -16,6 +21,7 @@ class OperationEnum(str, Enum):
 
 
 class KafkaTopic(BaseModel):
+    """Models and validates Kafka topic configurations"""
     name: str
     replication_factor: Optional[int]
     partitions: Optional[int]
@@ -42,10 +48,12 @@ class KafkaTopic(BaseModel):
 
 
 class KafkaTopics(BaseModel):
+    """Kafka Topic Collection/List"""
     __root__: List[KafkaTopic]
 
 
 class KafkaSettings(BaseSettings):
+    """Kafka Consumer/Broker Settings"""
     bootstrap_servers: str = Field(alias='bootstrap.servers', default='localhost:9092')
     group_id: str = Field(alias='group.id')
     security_protocol: str = Field(alias='security.protocol')

@@ -1,3 +1,8 @@
+"""
+kafka.py
+
+Kafka topic maintenance operations - create, update, delete.
+"""
 import os
 import sys
 from time import sleep

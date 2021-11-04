@@ -1,3 +1,8 @@
+"""
+logger_util.py
+
+logging convenience functions
+"""
 import logging
 import sys
 
