@@ -1,8 +1,12 @@
-import os
+"""
+kafka_consumer.py
+
+AsyncIO Kafka Consumer
+"""
 from asyncio import create_task, gather, sleep, get_running_loop
 from confluent_kafka import Consumer
 
-from . import logging_codes, logger_util, config as configurations
+from . import config as configurations, logger_util, logging_codes
 from .message_segmenter import combine_segments
 
 logger = logger_util.get_logger(__name__)
@@ -12,7 +16,18 @@ _DEFAULT_MONITOR_FREQUENCY = 60  # This is the monitoring frequency in secs on t
 
 
 class KafkaConsumer:
+    """
+    AsyncIO Compatible Kafka Consumer which monitors one or more topics.
+    Supports pause/unpause listening operations and streaming data via a callback function.
+    Callback functions have an expectation of being async.
+    """
     def __init__(self, topics, *, concurrent_listeners=None, monitor_frequency=None):
+        """
+        Configues the KafkaConsumer instance.
+        :param topics: iterable of topic names
+        :param concurrent_listeners: The number of concurrent consumer listeners. Defaults to _DEFAULT_CONCURRENT_LISTENERS.
+        :param monitor_frequency: The number of seconds a listener is monitored. Defaults to _DEFAULT_MONITOR_FREQUENCY.
+        """
         broker_config = configurations.KafkaSettings().dict(by_alias=True)
         self.auto_commit_enabled = True
         if 'enable.auto.commit' in broker_config and broker_config['enable.auto.commit'] == False:
@@ -34,6 +49,15 @@ class KafkaConsumer:
             raise e
 
     async def start_listening(self, callback):
+        """
+        Starts the Kafka Consumer and registers a callback method.
+        The callback method is executed when a message is received.
+        The callback signature is `(message: str, headers: Dict)`
+
+        The consume will continue listening until it is paused or closed.
+
+        :param callback: The callback function.
+        """
         if self.consumer is None:
             logger.error(logging_codes.CONSUMER_NOT_INITIALIZED)
             raise ValueError('cannot start listening when consumer is not initialized')
@@ -55,9 +79,11 @@ class KafkaConsumer:
                             self.tasks.append(create_task(self._listening_task(callback)))
 
     def pause(self):
+        """Pauses the consumer"""
         self.paused = True
 
     def unpause(self):
+        """Resumes the consumer"""
         self.paused = False
 
     async def _task_monitor(self, tasks):
@@ -103,6 +129,7 @@ class KafkaConsumer:
         return headers_dict
 
     def close_consumer(self):
+        """closes the consumer and cancels any pending tasks"""
         self.done = True
         self.monitor_task.cancel()
         for task in self.tasks:

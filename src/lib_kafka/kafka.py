@@ -1,11 +1,15 @@
+"""
+kafka.py
+
+Kafka topic maintenance operations - create, update, delete.
+"""
 import os
 import sys
 from time import sleep
 
 from confluent_kafka import KafkaError
 from confluent_kafka.admin import AdminClient, NewTopic, NewPartitions, KafkaException
-from . import logging_codes, logger_util, config as configurations
-
+from . import config as configurations, logger_util, logging_codes
 
 logger = logger_util.get_logger(__name__)
 

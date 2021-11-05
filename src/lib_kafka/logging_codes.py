@@ -1,3 +1,8 @@
+"""
+logging_codes.py
+
+standardized logging codes and message strings
+"""
 # Info
 TOPIC_START_CREATE = 'KAFLIBLOG001: Started creating topic...'
 CREATE_TOPIC_SUCCESS = 'KAFLIBLOG002: Topic "%s" created successfully'

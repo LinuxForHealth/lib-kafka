@@ -1,12 +1,23 @@
+"""
+message_segmenter.py
+
+Supports message segmentation and reconstruction.
+"""
 import uuid
 import math
 import time
-from . import logging_codes, logger_util
-
+from . import logger_util, logging_codes
 
 logger = logger_util.get_logger(__name__)
 
 def segment_message(msg, chunk_size=900*1024):
+    """
+    Splits a message into segments based on a "chunk" size.
+
+    :param message: The input message
+    :param chunk_size: The size of each segment in bytes. Defaults to 900*1024
+    :returns: generator for the current message segment
+    """
     if type(msg) == str:
         msg_bytes = msg.encode('utf-8')
     elif type(msg) == bytes:
@@ -37,6 +48,9 @@ _message_store = {}
 
 
 def combine_segments(value, headers):
+    """
+    Combines segments into a single message
+    """
     identifier = headers[ID].decode('utf-8')
     count = int(headers[COUNT].decode('utf-8'))
     index = int(headers[INDEX].decode('utf-8'))
