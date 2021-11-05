@@ -6,7 +6,7 @@ Supports message segmentation and reconstruction.
 import uuid
 import math
 import time
-from lib_kafka import logger_util, logging_codes
+from . import logger_util, logging_codes
 
 logger = logger_util.get_logger(__name__)
 

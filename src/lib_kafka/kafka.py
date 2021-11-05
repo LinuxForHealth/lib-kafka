@@ -9,7 +9,7 @@ from time import sleep
 
 from confluent_kafka import KafkaError
 from confluent_kafka.admin import AdminClient, NewTopic, NewPartitions, KafkaException
-from lib_kafka import config as configurations, logger_util, logging_codes
+from . import config as configurations, logger_util, logging_codes
 
 logger = logger_util.get_logger(__name__)
 
